@@ -1,0 +1,44 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.example.demo</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>AdditionToTheDatabase</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor>Roman</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description>Test version for database Room___________________________</description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <action id="com.example.demo.Main" class="com.example.demo.Main" text="Database" icon="AllIcons.Actions.Properties"
+                description="Plugin description">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl J"/>
+        </action>
+    </actions>
+
+    <actions>
+        <action id="com.example.demo.database_group.FileDatabase" class="com.example.demo.database_group.FileDatabase"
+                text="Kotlin Database Class" icon="AllIcons.Actions.AddFile"
+                description="Kotlin database class">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl L"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Custom Notification Group"
+                           displayType="BALLOON"/>
+    </extensions>
+
+</idea-plugin>
