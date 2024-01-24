@@ -28,9 +28,9 @@
     </actions>
 
     <actions>
-        <action id="com.example.demo.database_group.FileDatabase" class="com.example.demo.database_group.FileDatabase"
-                text="Kotlin Database Class" icon="AllIcons.Actions.AddFile"
-                description="Kotlin database class">
+        <action id="com.example.demo.database_group.CreateTable" class="com.example.demo.database_group.CreateTable"
+                text="Create Table (Kotlin)" icon="AllIcons.Actions.AddFile"
+                description="Create table">
             <add-to-group group-id="NewGroup" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl L"/>
         </action>
