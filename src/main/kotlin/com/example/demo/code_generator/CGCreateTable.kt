@@ -1,5 +1,7 @@
 package com.example.demo.code_generator
 
+import com.example.demo.model.ColumnData
+
 class CGCreateTable {
     private var content = ""
 
@@ -8,7 +10,8 @@ class CGCreateTable {
         tableName: String,
         primaryKeyName: String,
         primaryKeyAutoGenerate: Boolean,
-        primaryKeyValue: String
+        primaryKeyValue: String,
+        listColumnData: List<ColumnData>
     ): String {
         content = """
                 package $path
@@ -19,10 +22,7 @@ class CGCreateTable {
 
                 @Entity(tableName = "$tableName")
                 data class $tableName(
-                   @ColumnInfo(name = "title")
-                   val title: String = "",
-                   @ColumnInfo(name = "url")
-                   val url: String = ""
+                   ${generateColumns(listColumnData)}
                 ) {
                    @PrimaryKey(autoGenerate = ${primaryKeyAutoGenerate})
                    var $primaryKeyName: Int = ${
@@ -35,6 +35,23 @@ class CGCreateTable {
                 }
             """.trimIndent()
 
+        return content
+    }
+
+    private fun generateColumns(list: List<ColumnData>): String {
+        var content = ""
+
+        for (i in list.indices) {
+            val cont = """
+                @ColumnInfo(name = "${list[i].name}")
+                val ${list[i].name}: ${list[i].dataType} = ${list[i].value}
+            """
+            content += cont
+
+            if (i < list.size - 1) {
+                content += ","
+            }
+        }
         return content
     }
 }
