@@ -90,11 +90,11 @@ class InputDialogEntity : DialogWrapper(true) {
         val addButton = JButton("Add")
         addButton.addActionListener {
 
-            // Виклик вашого власного InputDialog
+            // Click your own InputDialog
             val inputDialogColumn = InputDialogColumn()
             inputDialogColumn.show()
 
-            // Отримайте результати, якщо потрібно
+            // Get the results when you click the OK button
             if (inputDialogColumn.isOK) {
                 val columnName = inputDialogColumn.getColumnName()
                 val columnDataType = inputDialogColumn.getColumnDataType()
