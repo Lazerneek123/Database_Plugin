@@ -22,10 +22,10 @@ class CGCreateTable {
 
                 @Entity(tableName = "$tableName")
                 data class $tableName(
-                   ${generateColumns(listColumnData)}
+                ${generateColumns(listColumnData)}
                 ) {
-                   @PrimaryKey(autoGenerate = ${primaryKeyAutoGenerate})
-                   var $primaryKeyName: Int = ${
+                    @PrimaryKey(autoGenerate = ${primaryKeyAutoGenerate})
+                    var $primaryKeyName: Int = ${
             if (!primaryKeyAutoGenerate) {
                 primaryKeyValue
             } else {
@@ -42,10 +42,13 @@ class CGCreateTable {
         var content = ""
 
         for (i in list.indices) {
-            val cont = """
-                @ColumnInfo(name = "${list[i].name}")
-                val ${list[i].name}: ${list[i].dataType} = ${list[i].value}
-            """
+            if (i >= 1) {
+                content += """
+                    
+                """
+            }
+            val cont = """    @ColumnInfo(name = "${list[i].name}")
+                    val ${list[i].name}: ${list[i].dataType} = ${list[i].value}"""
             content += cont
 
             if (i < list.size - 1) {

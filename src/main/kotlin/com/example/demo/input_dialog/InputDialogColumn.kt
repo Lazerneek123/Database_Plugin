@@ -2,6 +2,10 @@ package com.example.demo.input_dialog
 
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
+import javax.swing.text.AttributeSet
+import javax.swing.text.PlainDocument
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class InputDialogColumn : DialogWrapper(true) {
     private val panel = JPanel()
@@ -10,7 +14,9 @@ class InputDialogColumn : DialogWrapper(true) {
     private val nameField = JTextField()
 
     private val valueLabel = JLabel("Value:")
-    private val valueField = JTextField()
+    private val valueField = TextFieldValue()
+    private val typeLabel = JLabel("Type:")
+    private val comboBoxBoolean = JComboBox(arrayOf("true", "false"))
 
     // Creating options for a drop-down list
     private val dataTypes = arrayOf(
@@ -24,7 +30,7 @@ class InputDialogColumn : DialogWrapper(true) {
     )
 
     // Creating a drop-down list
-    private var comboBox = JComboBox(dataTypes)
+    private val comboBoxDateType = JComboBox(dataTypes)
 
     init {
         title = "Create Column"
@@ -37,12 +43,45 @@ class InputDialogColumn : DialogWrapper(true) {
 
         nameColumnPanel.add(nameLabel)
         nameColumnPanel.add(nameField)
+        checkTextFieldToLatinCharactersOnly()
+
+        // Document listener for a text field
+        nameField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+        })
         panel.add(nameColumnPanel)
 
         val comboBoxPanel = JPanel()
         comboBoxPanel.layout = BoxLayout(comboBoxPanel, BoxLayout.X_AXIS)
 
-        comboBoxPanel.add(comboBox)
+        // Listener for JComboBox
+        comboBoxDateType.addActionListener {
+            val selectedItem = comboBoxDateType.selectedItem
+            if (selectedItem as? String == "Boolean") {
+                comboBoxBoolean.isVisible = true
+                valueField.isVisible = false
+            } else {
+                // To clear the data in the value term
+                valueField.setSelectedItem(selectedItem as? String)
+                comboBoxBoolean.isVisible = false
+                valueField.isVisible = true
+                updateValueField()
+            }
+            checkConditions()
+        }
+
+        comboBoxPanel.add(typeLabel)
+        comboBoxPanel.add(comboBoxDateType)
         panel.add(comboBoxPanel)
 
         val valuePanel = JPanel()
@@ -50,7 +89,58 @@ class InputDialogColumn : DialogWrapper(true) {
 
         valuePanel.add(valueLabel)
         valuePanel.add(valueField)
+        comboBoxBoolean.isVisible = false
+        valuePanel.add(comboBoxBoolean)
+        comboBoxBoolean.addActionListener {
+            checkConditions()
+        }
+
+        isOKActionEnabled = false
+        updateValueField()
         panel.add(valuePanel)
+    }
+
+    private fun checkConditions() {
+        val name = nameField.text
+        val value = valueField.text
+
+        // Condition check
+        val conditionsMet: Boolean = if (comboBoxBoolean.isVisible) {
+            name.isNotEmpty()
+        } else {
+            name.isNotEmpty() && value.isNotEmpty()
+        }
+
+        // Activate or deactivate the OK button
+        isOKActionEnabled = conditionsMet
+    }
+
+    private fun updateValueField() {
+        valueField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+        })
+    }
+
+
+    private fun checkTextFieldToLatinCharactersOnly() {
+        nameField.document = object : PlainDocument() {
+            override fun insertString(offset: Int, str: String?, attr: AttributeSet?) {
+                if (str == null) return
+                if (str.matches(Regex("[a-zA-Z]*"))) {
+                    super.insertString(offset, str, attr)
+                }
+            }
+        }
     }
 
     override fun createCenterPanel(): JComponent {
@@ -62,10 +152,17 @@ class InputDialogColumn : DialogWrapper(true) {
     }
 
     fun getColumnDataType(): String {
-        return comboBox.selectedItem as String
+        return comboBoxDateType.selectedItem as String
     }
 
     fun getColumnValue(): String {
-        return valueField.text
+        if (comboBoxBoolean.isVisible) {
+            return comboBoxBoolean.selectedItem as String
+        } else {
+            if (comboBoxDateType.selectedItem as String == "String") {
+                return '"' + valueField.text + '"'
+            }
+            return valueField.text
+        }
     }
 }

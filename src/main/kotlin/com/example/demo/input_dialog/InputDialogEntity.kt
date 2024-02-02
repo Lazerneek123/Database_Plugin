@@ -4,6 +4,7 @@ import com.example.demo.model.ColumnData
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.event.ItemEvent
+import com.intellij.openapi.ui.Messages
 import javax.swing.*
 
 class InputDialogEntity : DialogWrapper(true) {
@@ -97,13 +98,21 @@ class InputDialogEntity : DialogWrapper(true) {
             // Get the results when you click the OK button
             if (inputDialogColumn.isOK) {
                 val columnName = inputDialogColumn.getColumnName()
-                val columnDataType = inputDialogColumn.getColumnDataType()
-                val columnValue = inputDialogColumn.getColumnValue()
 
-                val newColumn = ColumnData(columnName, columnDataType, columnValue)
-                listModel.addElement(newColumn)
+                // Checking for a name match
+                if (listModel.elements().toList().any { it.name == columnName }) {
+                    Messages.showErrorDialog(
+                        "This column name already exists. Change the name to something else!",
+                        "Error:"
+                    )
+                } else {
+                    val columnDataType = inputDialogColumn.getColumnDataType()
+                    val columnValue = inputDialogColumn.getColumnValue()
+
+                    val newColumn = ColumnData(columnName, columnDataType, columnValue)
+                    listModel.addElement(newColumn)
+                }
             }
-
         }
 
         // Delete button
@@ -146,10 +155,6 @@ class InputDialogEntity : DialogWrapper(true) {
     }
 
     fun getColumnsData(): List<ColumnData> {
-        val listColumn = ArrayList<ColumnData>()
-        for (i in 0 until listModel.size) {
-            listColumn.add(listModel.getElementAt(i))
-        }
-        return listColumn
+        return listModel.elements().toList()
     }
 }

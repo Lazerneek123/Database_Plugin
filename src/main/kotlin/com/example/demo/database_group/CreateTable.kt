@@ -30,7 +30,7 @@ class CreateTable : AnAction() {
             val sourceRoot = "/src/main/java/"
             val packagePathWithoutSourceRoot = directoryPath.substringAfter(sourceRoot)
 
-            // eceive the packet from the received path
+            // Receive the packet from the received path
             val packagePath = packagePathWithoutSourceRoot.replace("/", ".")
 
             messageShowInputDialog(project!!, directoryPath, packagePath, event)
