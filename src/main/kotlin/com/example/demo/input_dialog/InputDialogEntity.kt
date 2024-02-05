@@ -2,10 +2,16 @@ package com.example.demo.input_dialog
 
 import com.example.demo.model.ColumnData
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
 import java.awt.event.ItemEvent
-import com.intellij.openapi.ui.Messages
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.event.ListDataEvent
+import javax.swing.event.ListDataListener
+import javax.swing.text.AttributeSet
+import javax.swing.text.PlainDocument
 
 class InputDialogEntity : DialogWrapper(true) {
     private val panel = JPanel()
@@ -35,11 +41,15 @@ class InputDialogEntity : DialogWrapper(true) {
 
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
 
+        setTextFieldToLatinCharactersOnly()
+
         val nameTablePanel = JPanel()
         nameTablePanel.layout = BoxLayout(nameTablePanel, BoxLayout.X_AXIS)
 
         nameTablePanel.add(nameLabel)
         nameTablePanel.add(nameTableField)
+
+        addDocumentListenerTextField(nameTableField)
         panel.add(nameTablePanel)
 
         // Extra space between elements
@@ -71,11 +81,15 @@ class InputDialogEntity : DialogWrapper(true) {
                 isActionEnabled = false
                 primaryKeyTextFieldValue.isEnabled = true
             }
+            checkConditions()
         }
         primaryKeyInputPanel.add(primaryKeyAutoGenerate)
 
+        addDocumentListenerTextField(primaryKeyTextFieldName)
+        addDocumentListenerTextField(primaryKeyTextFieldValue)
         panel.add(primaryKeyInputPanel)
 
+        isOKActionEnabled = false
         panelCreateColumn()
     }
 
@@ -100,7 +114,9 @@ class InputDialogEntity : DialogWrapper(true) {
                 val columnName = inputDialogColumn.getColumnName()
 
                 // Checking for a name match
-                if (listModel.elements().toList().any { it.name == columnName }) {
+                if (listModel.elements().toList()
+                        .any { it.name == columnName } && primaryKeyTextFieldName.text == columnName
+                ) {
                     Messages.showErrorDialog(
                         "This column name already exists. Change the name to something else!",
                         "Error:"
@@ -124,6 +140,21 @@ class InputDialogEntity : DialogWrapper(true) {
             }
         }
 
+        // Add a change listener to the list model
+        listModel.addListDataListener(object : ListDataListener {
+            override fun intervalAdded(e: ListDataEvent) {
+                checkConditions()
+            }
+
+            override fun intervalRemoved(e: ListDataEvent) {
+                checkConditions()
+            }
+
+            override fun contentsChanged(e: ListDataEvent) {
+                checkConditions()
+            }
+        })
+
         // Adding a list to a panel
         panel.add(JScrollPane(list), BorderLayout.CENTER)
 
@@ -132,6 +163,55 @@ class InputDialogEntity : DialogWrapper(true) {
         buttonPanel.add(addButton)
         buttonPanel.add(removeButton)
         panel.add(buttonPanel, BorderLayout.SOUTH)
+    }
+
+    private fun addDocumentListenerTextField(textField: JTextField) {
+        // Document listener for a text field
+        textField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                checkConditions()
+            }
+        })
+    }
+
+    private fun checkConditions() {
+        val nameTable = nameTableField.text
+        val namePrimaryKey = primaryKeyTextFieldName.text
+
+        // Condition check
+        val conditionsMet: Boolean = if (primaryKeyAutoGenerate.isSelected) {
+            nameTable.isNotEmpty() && namePrimaryKey.isNotEmpty() && listModel.elements().toList().isNotEmpty()
+        } else {
+            nameTable.isNotEmpty() && namePrimaryKey.isNotEmpty() && listModel.elements().toList()
+                .isNotEmpty() && primaryKeyTextFieldValue.text.isNotEmpty()
+        }
+
+        // Activate or deactivate the OK button
+        isOKActionEnabled = conditionsMet
+    }
+
+    private fun setTextFieldToLatinCharactersOnly() {
+        nameTableField.document = createDocumentForRegex("[a-zA-Z]*")
+        primaryKeyTextFieldName.document = createDocumentForRegex("[a-zA-Z]*")
+    }
+
+    private fun createDocumentForRegex(regex: String): PlainDocument {
+        return object : PlainDocument() {
+            override fun insertString(offset: Int, str: String?, attr: AttributeSet?) {
+                if (str == null) return
+                if (str.matches(Regex(regex))) {
+                    super.insertString(offset, str, attr)
+                }
+            }
+        }
     }
 
     override fun createCenterPanel(): JComponent {

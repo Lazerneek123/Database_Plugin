@@ -14,7 +14,7 @@ class InputDialogColumn : DialogWrapper(true) {
     private val nameField = JTextField()
 
     private val valueLabel = JLabel("Value:")
-    private val valueField = TextFieldValue()
+    private val valueField = TextFieldValueColumn()
     private val typeLabel = JLabel("Type:")
     private val comboBoxBoolean = JComboBox(arrayOf("true", "false"))
 

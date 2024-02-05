@@ -4,7 +4,7 @@ import javax.swing.JTextField
 import javax.swing.text.AttributeSet
 import javax.swing.text.PlainDocument
 
-class TextFieldValue : JTextField() {
+class TextFieldValueColumn : JTextField() {
     private var selectedItem: String? = null
 
     private fun updateTextFieldRestrictions() {
