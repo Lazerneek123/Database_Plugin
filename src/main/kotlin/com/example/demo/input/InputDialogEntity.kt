@@ -1,4 +1,4 @@
-package com.example.demo.input_dialog
+package com.example.demo.input
 
 import com.example.demo.model.ColumnData
 import com.intellij.openapi.ui.DialogWrapper

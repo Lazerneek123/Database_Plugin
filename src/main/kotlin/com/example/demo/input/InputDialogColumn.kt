@@ -1,5 +1,6 @@
-package com.example.demo.input_dialog
+package com.example.demo.input
 
+import com.example.demo.element.TextFieldValueColumn
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
 import javax.swing.text.AttributeSet

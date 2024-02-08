@@ -1,8 +1,8 @@
-package com.example.demo.code_generator
+package com.example.demo.generator
 
 import com.example.demo.model.ColumnData
 
-class CGCreateTable {
+class GeneratorCreateTable {
     private var content = ""
 
     fun generate(

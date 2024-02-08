@@ -28,7 +28,7 @@
     </actions>
 
     <actions>
-        <action id="com.example.demo.database_group.CreateTable" class="com.example.demo.database_group.CreateTable"
+        <action id="com.example.demo.action.CreateTable" class="com.example.demo.action.CreateTable"
                 text="Create Table (Kotlin)" icon="AllIcons.Actions.AddFile"
                 description="Create table">
             <add-to-group group-id="NewGroup" anchor="first"/>

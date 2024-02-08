@@ -1,4 +1,4 @@
-package com.example.demo.input_dialog
+package com.example.demo.element
 
 import javax.swing.JTextField
 import javax.swing.text.AttributeSet
