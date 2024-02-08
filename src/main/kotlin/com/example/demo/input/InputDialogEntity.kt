@@ -219,11 +219,11 @@ class InputDialogEntity : DialogWrapper(true) {
     }
 
     fun getTableName(): String {
-        return nameTableField.text
+        return nameTableField.text.toString()
     }
 
     fun getPrimaryKeyName(): String {
-        return primaryKeyTextFieldName.text
+        return primaryKeyTextFieldName.text.toString()
     }
 
     fun getPrimaryKeyAutoGenerate(): Boolean {
@@ -231,7 +231,7 @@ class InputDialogEntity : DialogWrapper(true) {
     }
 
     fun getPrimaryKeyValue(): String {
-        return primaryKeyTextFieldValue.text
+        return primaryKeyTextFieldValue.text.toString()
     }
 
     fun getColumnsData(): List<ColumnData> {

@@ -1,6 +1,7 @@
 package com.example.demo.generator
 
 import com.example.demo.model.ColumnData
+import org.jetbrains.kotlin.lombok.utils.capitalize
 
 class GeneratorCreateTable {
     private var content = ""
@@ -21,17 +22,22 @@ class GeneratorCreateTable {
                 import androidx.room.PrimaryKey
 
                 @Entity(tableName = "$tableName")
-                data class $tableName(
+                data class ${capitalizeFirstLetter(tableName)}(
                 ${generateColumns(listColumnData)}
                 ) {
                     @PrimaryKey(autoGenerate = ${primaryKeyAutoGenerate})
-                    var $primaryKeyName: Int = ${
+                    @ColumnInfo(name = "$primaryKeyName")
+                    private var $primaryKeyName: Int = ${
             if (!primaryKeyAutoGenerate) {
                 primaryKeyValue
             } else {
                 0
             }
         }
+        
+                    fun get${capitalizeFirstLetter(primaryKeyName)}(): Int {
+                        return $primaryKeyName
+                    }
                 }
             """.trimIndent()
 
@@ -56,5 +62,11 @@ class GeneratorCreateTable {
             }
         }
         return content
+    }
+
+    private fun capitalizeFirstLetter(str: String): String {
+        if (str.isEmpty()) return str
+        val firstChar = str[0].uppercaseChar()
+        return firstChar + str.substring(1)
     }
 }
