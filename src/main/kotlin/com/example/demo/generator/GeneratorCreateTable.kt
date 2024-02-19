@@ -1,7 +1,6 @@
 package com.example.demo.generator
 
 import com.example.demo.model.ColumnData
-import org.jetbrains.kotlin.lombok.utils.capitalize
 
 class GeneratorCreateTable {
     private var content = ""

@@ -2,6 +2,7 @@ package com.example.demo.input
 
 import com.example.demo.element.TextFieldValueColumn
 import com.intellij.openapi.ui.DialogWrapper
+import java.awt.event.ItemEvent
 import javax.swing.*
 import javax.swing.text.AttributeSet
 import javax.swing.text.PlainDocument
@@ -18,6 +19,9 @@ class InputDialogColumn : DialogWrapper(true) {
     private val valueField = TextFieldValueColumn()
     private val typeLabel = JLabel("Type:")
     private val comboBoxBoolean = JComboBox(arrayOf("true", "false"))
+
+    private val valueAutoGenerate = JCheckBox("Auto Generate")
+
 
     // Creating options for a drop-down list
     private val dataTypes = arrayOf(
@@ -69,6 +73,7 @@ class InputDialogColumn : DialogWrapper(true) {
         comboBoxDateType.addActionListener {
             val selectedItem = comboBoxDateType.selectedItem
             if (selectedItem as? String == "Boolean") {
+                comboBoxBoolean.isEnabled = !valueAutoGenerate.isSelected
                 comboBoxBoolean.isVisible = true
                 valueField.isVisible = false
             } else {
@@ -90,11 +95,29 @@ class InputDialogColumn : DialogWrapper(true) {
 
         valuePanel.add(valueLabel)
         valuePanel.add(valueField)
+
         comboBoxBoolean.isVisible = false
         valuePanel.add(comboBoxBoolean)
         comboBoxBoolean.addActionListener {
             checkConditions()
         }
+
+        valueAutoGenerate.isSelected = true
+        valueField.isEnabled = false
+        // We add an event listener for the checkBox
+        valueAutoGenerate.addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                // If the checkBox is checked, set isActionEnabled to true
+                valueField.isEnabled = false
+                comboBoxBoolean.isEnabled = false
+            } else if (e.stateChange == ItemEvent.DESELECTED) {
+                // If the checkBox is not checked, set isActionEnabled to false
+                valueField.isEnabled = true
+                comboBoxBoolean.isEnabled = true
+            }
+            checkConditions()
+        }
+        valuePanel.add(valueAutoGenerate)
 
         isOKActionEnabled = false
         updateValueField()
@@ -106,7 +129,7 @@ class InputDialogColumn : DialogWrapper(true) {
         val value = valueField.text
 
         // Condition check
-        val conditionsMet: Boolean = if (comboBoxBoolean.isVisible) {
+        val conditionsMet: Boolean = if (valueAutoGenerate.isSelected || comboBoxBoolean.isVisible) {
             name.isNotEmpty()
         } else {
             name.isNotEmpty() && value.isNotEmpty()
@@ -163,7 +186,22 @@ class InputDialogColumn : DialogWrapper(true) {
             if (comboBoxDateType.selectedItem as String == "String") {
                 return '"' + valueField.text + '"'
             }
+            if (valueAutoGenerate.isSelected) {
+                return autoGenerateValue()
+            }
             return valueField.text
+        }
+    }
+
+    private fun autoGenerateValue(): String {
+        return when (comboBoxDateType.selectedItem) {
+            "String" -> """"""
+            "Int", "Long", "Byte" -> "0"
+            "Double" -> "0.0"
+            "Boolean" -> "true"
+            "Float" -> "0.0f"
+            // Other options to choose from
+            else -> ""
         }
     }
 }

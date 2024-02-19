@@ -16,7 +16,7 @@ class TextFieldValueColumn : JTextField() {
             "Long" -> setTextFieldToNumeric(false)
             //"Boolean" -> setBoolean(boolean)
             "Float", "Byte" -> setTextFieldToFloatOrByteOnly()
-            // Інші варіанти вибору
+            // Other options to choose from
             else -> resetTextFieldRestrictions()
         }
     }
