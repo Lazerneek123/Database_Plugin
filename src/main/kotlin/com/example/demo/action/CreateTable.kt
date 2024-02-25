@@ -47,9 +47,9 @@ class CreateTable : AnAction() {
         if (inputDialog.showAndGet()) {
             var fileName = inputDialog.getTableName()
 
-            if (!fileName.isNullOrEmpty()) {
+            if (fileName.isNotEmpty()) {
                 // Create a new file with the entered name and extension .kt
-                val name = "$fileName.kt"
+                val name = "${capitalizeFirstLetter(fileName)}.kt"
                 // Use runWriteAction to access the file system within a write-action
                 ApplicationManager.getApplication().runWriteAction {
                     createKotlinFile(project, directoryPath, packagePath, name, inputDialog, event)
@@ -110,5 +110,11 @@ class CreateTable : AnAction() {
         // Open the file in a tab
         val openFileDescriptor = OpenFileDescriptor(project, file)
         FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, true)
+    }
+
+    private fun capitalizeFirstLetter(str: String): String {
+        if (str.isEmpty()) return str
+        val firstChar = str[0].uppercaseChar()
+        return firstChar + str.substring(1)
     }
 }
