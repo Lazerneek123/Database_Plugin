@@ -124,8 +124,9 @@ class InputDialogEntity : DialogWrapper(true) {
                 } else {
                     val columnDataType = inputDialogColumn.getColumnDataType()
                     val columnValue = inputDialogColumn.getColumnValue()
+                    val nullable = inputDialogColumn.getColumnNullable()
 
-                    val newColumn = ColumnData(columnName, columnDataType, columnValue)
+                    val newColumn = ColumnData(columnName, columnDataType, columnValue, nullable)
                     listModel.addElement(newColumn)
                 }
             }

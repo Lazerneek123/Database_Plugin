@@ -4,10 +4,11 @@ import com.example.demo.element.TextFieldValueColumn
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.event.ItemEvent
 import javax.swing.*
-import javax.swing.text.AttributeSet
-import javax.swing.text.PlainDocument
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import javax.swing.text.AttributeSet
+import javax.swing.text.PlainDocument
+
 
 class InputDialogColumn : DialogWrapper(true) {
     private val panel = JPanel()
@@ -20,7 +21,8 @@ class InputDialogColumn : DialogWrapper(true) {
     private val typeLabel = JLabel("Type:")
     private val comboBoxBoolean = JComboBox(arrayOf("true", "false"))
 
-    private val valueAutoGenerate = JCheckBox("Auto Generate")
+    private val valueAutoGenerateCheckBox = JCheckBox("Auto Generate")
+    private val nullableCheckBox = JCheckBox("Nullable")
 
 
     // Creating options for a drop-down list
@@ -73,7 +75,7 @@ class InputDialogColumn : DialogWrapper(true) {
         comboBoxDateType.addActionListener {
             val selectedItem = comboBoxDateType.selectedItem
             if (selectedItem as? String == "Boolean") {
-                comboBoxBoolean.isEnabled = !valueAutoGenerate.isSelected
+                comboBoxBoolean.isEnabled = !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected
                 comboBoxBoolean.isVisible = true
                 valueField.isVisible = false
             } else {
@@ -102,22 +104,52 @@ class InputDialogColumn : DialogWrapper(true) {
             checkConditions()
         }
 
-        valueAutoGenerate.isSelected = true
+        val valueAutoPanel = JPanel()
+        valueAutoPanel.layout = BoxLayout(valueAutoPanel, BoxLayout.Y_AXIS)
+
+        valueAutoGenerateCheckBox.isSelected = true
         valueField.isEnabled = false
         // We add an event listener for the checkBox
-        valueAutoGenerate.addItemListener { e ->
+        valueAutoGenerateCheckBox.addItemListener { e ->
             if (e.stateChange == ItemEvent.SELECTED) {
                 // If the checkBox is checked, set isActionEnabled to true
+                comboBoxBoolean.isEnabled =
+                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
                 valueField.isEnabled = false
-                comboBoxBoolean.isEnabled = false
+                nullableCheckBox.isSelected = false
             } else if (e.stateChange == ItemEvent.DESELECTED) {
                 // If the checkBox is not checked, set isActionEnabled to false
+                comboBoxBoolean.isEnabled =
+                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
                 valueField.isEnabled = true
-                comboBoxBoolean.isEnabled = true
             }
             checkConditions()
         }
-        valuePanel.add(valueAutoGenerate)
+        valueAutoPanel.add(valueAutoGenerateCheckBox)
+
+
+        nullableCheckBox.isSelected = false
+        // We add an event listener for the checkBox
+        nullableCheckBox.addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                comboBoxBoolean.isEnabled =
+                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
+                valueField.isEnabled = false
+                valueAutoGenerateCheckBox.isSelected = false
+            } else if (e.stateChange == ItemEvent.DESELECTED) {
+                comboBoxBoolean.isEnabled =
+                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
+                valueField.isEnabled = true
+            }
+            checkConditions()
+        }
+
+        valueAutoPanel.add(nullableCheckBox)
+        valuePanel.add(valueAutoPanel)
 
         isOKActionEnabled = false
         updateValueField()
@@ -129,11 +161,12 @@ class InputDialogColumn : DialogWrapper(true) {
         val value = valueField.text
 
         // Condition check
-        val conditionsMet: Boolean = if (valueAutoGenerate.isSelected || comboBoxBoolean.isVisible) {
-            name.isNotEmpty()
-        } else {
-            name.isNotEmpty() && value.isNotEmpty()
-        }
+        val conditionsMet: Boolean =
+            if (valueAutoGenerateCheckBox.isSelected || nullableCheckBox.isSelected || comboBoxBoolean.isEnabled || !valueField.isEnabled) {
+                name.isNotEmpty()
+            } else {
+                name.isNotEmpty() && value.isNotEmpty()
+            }
 
         // Activate or deactivate the OK button
         isOKActionEnabled = conditionsMet
@@ -179,17 +212,25 @@ class InputDialogColumn : DialogWrapper(true) {
         return comboBoxDateType.selectedItem as String
     }
 
+    fun getColumnNullable(): Boolean {
+        return nullableCheckBox.isSelected
+    }
+
     fun getColumnValue(): String {
-        if (comboBoxBoolean.isVisible) {
-            return comboBoxBoolean.selectedItem as String
+        if (!nullableCheckBox.isSelected) {
+            if (comboBoxBoolean.isVisible) {
+                return comboBoxBoolean.selectedItem as String
+            } else {
+                if (comboBoxDateType.selectedItem as String == "String") {
+                    return '"' + valueField.text + '"'
+                }
+                if (valueAutoGenerateCheckBox.isSelected) {
+                    return autoGenerateValue()
+                }
+                return valueField.text
+            }
         } else {
-            if (comboBoxDateType.selectedItem as String == "String") {
-                return '"' + valueField.text + '"'
-            }
-            if (valueAutoGenerate.isSelected) {
-                return autoGenerateValue()
-            }
-            return valueField.text
+            return "null"
         }
     }
 

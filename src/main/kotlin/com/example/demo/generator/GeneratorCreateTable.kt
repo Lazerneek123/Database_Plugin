@@ -52,8 +52,9 @@ class GeneratorCreateTable {
                     
                 """
             }
+            val nullable = list[i].nullable
             val cont = """    @ColumnInfo(name = "${list[i].name}")
-                    val ${list[i].name}: ${list[i].dataType} = ${list[i].value}"""
+                    val ${list[i].name}: ${list[i].dataType}${columnQuestionMark(nullable)} = ${list[i].value}"""
             content += cont
 
             if (i < list.size - 1) {
@@ -61,6 +62,10 @@ class GeneratorCreateTable {
             }
         }
         return content
+    }
+
+    private fun columnQuestionMark(b: Boolean): String {
+        return if (b) "?" else ""
     }
 
     private fun capitalizeFirstLetter(str: String): String {
