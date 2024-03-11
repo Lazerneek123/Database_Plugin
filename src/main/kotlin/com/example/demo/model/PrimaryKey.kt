@@ -1,8 +1,8 @@
 package com.example.demo.model
 
-data class ColumnData(
+data class PrimaryKey(
     val name: String,
     val dataType: String,
-    val value: String,
-    val nullable: Boolean
+    val autoGenerateValue: Boolean,
+    val value: String
 )

@@ -1,6 +1,7 @@
 package com.example.demo.generator
 
-import com.example.demo.model.ColumnData
+import com.example.demo.model.Column
+import com.example.demo.model.PrimaryKey
 
 class GeneratorCreateTable {
     private var content = ""
@@ -8,10 +9,8 @@ class GeneratorCreateTable {
     fun generate(
         path: String,
         tableName: String,
-        primaryKeyName: String,
-        primaryKeyAutoGenerate: Boolean,
-        primaryKeyValue: String,
-        listColumnData: List<ColumnData>
+        listPrimaryKeyData: List<PrimaryKey>,
+        listColumnData: List<Column>
     ): String {
         content = """
                 package $path
@@ -24,26 +23,48 @@ class GeneratorCreateTable {
                 data class ${capitalizeFirstLetter(tableName)}(
                 ${generateColumns(listColumnData)}
                 ) {
-                    @PrimaryKey(autoGenerate = ${primaryKeyAutoGenerate})
-                    @ColumnInfo(name = "$primaryKeyName")
-                    private var $primaryKeyName: Int = ${
-            if (!primaryKeyAutoGenerate) {
-                primaryKeyValue
-            } else {
-                0
-            }
-        }
-        
-                    fun get${capitalizeFirstLetter(primaryKeyName)}(): Int {
-                        return $primaryKeyName
-                    }
+                    ${generatePrimaryKeys(listPrimaryKeyData)}       
                 }
             """.trimIndent()
 
         return content
     }
 
-    private fun generateColumns(list: List<ColumnData>): String {
+    private fun generatePrimaryKeys(list: List<PrimaryKey>): String {
+        var content = ""
+
+        for (i in list.indices) {
+            if (i >= 1) {
+                content += """
+                    
+                """
+            }
+            val autoGenerate = list[i].autoGenerateValue
+            val name = list[i].name
+            val dataType = list[i].dataType
+            val value = list[i].value
+
+            val cont = """    
+                    @PrimaryKey(autoGenerate = $autoGenerate)
+                    @ColumnInfo(name = "$name")
+                    private var $name: $dataType = ${
+                if (!autoGenerate) {
+                    value
+                } else {
+                    0
+                }
+            }"""
+            content += cont
+
+            content += """                    
+                    fun get${capitalizeFirstLetter(name)}(): $dataType {
+                        return $name
+                    }"""
+        }
+        return content
+    }
+
+    private fun generateColumns(list: List<Column>): String {
         var content = ""
 
         for (i in list.indices) {

@@ -87,9 +87,7 @@ class CreateTable : AnAction() {
                 val content = GeneratorCreateTable().generate(
                     packagePath,
                     inputDialog.getTableName(),
-                    inputDialog.getPrimaryKeyName(),
-                    inputDialog.getPrimaryKeyAutoGenerate(),
-                    inputDialog.getPrimaryKeyValue(),
+                    inputDialog.getPrimaryKeysData(),
                     inputDialog.getColumnsData()
                 )
                 file?.setBinaryContent(content.toByteArray())

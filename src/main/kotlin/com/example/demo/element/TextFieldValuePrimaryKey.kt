@@ -2,7 +2,7 @@ package com.example.demo.element
 
 import javax.swing.JTextField
 
-class TextFieldValueColumn : JTextField() {
+class TextFieldValuePrimaryKey : JTextField() {
     private var selectedItem: String? = null
 
     private fun updateTextFieldRestrictions() {
@@ -11,9 +11,8 @@ class TextFieldValueColumn : JTextField() {
         document = when (selectedItem) {
             "String" -> textFieldRegex.setTextFieldToLatinCharactersOnly()
             "Int" -> textFieldRegex.setTextFieldToIntegerOnly()
-            "Double" -> textFieldRegex.setTextFieldToNumeric(true)
             "Long" -> textFieldRegex.setTextFieldToNumeric(false)
-            "Float", "Byte" -> textFieldRegex.setTextFieldToFloatOrByteOnly()
+            "Byte" -> textFieldRegex.setTextFieldToFloatOrByteOnly()
             // Other options to choose from
             else -> textFieldRegex.resetTextFieldRestrictions()
         }
