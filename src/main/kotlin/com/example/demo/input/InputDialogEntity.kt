@@ -6,6 +6,7 @@ import com.example.demo.model.PrimaryKey
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
+import java.awt.Dimension
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -45,8 +46,6 @@ class InputDialogEntity : DialogWrapper(true) {
 
         nameTablePanel.add(nameLabel)
         nameTablePanel.add(nameTableField)
-
-        listModelPrimaryKey.size = 2
 
         addDocumentListenerTextField(nameTableField)
         panel.add(nameTablePanel)
@@ -160,8 +159,7 @@ class InputDialogEntity : DialogWrapper(true) {
                 val columnName = inputDialogPrimaryKey.getPrimaryKeyName()
 
                 // Checking for a name match
-                if (listModelPrimaryKey.elements().toList()
-                        .any { it.name == columnName } ||
+                if (listModelPrimaryKey.elements().toList().any { it.name == columnName } ||
                     listModelColumn.elements().toList()
                         .any { it.name == columnName }
                 ) {

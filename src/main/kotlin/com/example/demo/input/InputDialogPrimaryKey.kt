@@ -162,13 +162,14 @@ class InputDialogPrimaryKey : DialogWrapper(true) {
     }
 
     fun getPrimaryKeyValue(): String {
-        if (comboBoxDateType.selectedItem as String == "String") {
-            return '"' + valueField.text + '"'
-        }
         if (valueAutoGenerateCheckBox.isSelected) {
             return autoGenerateValue()
+        } else {
+            if (comboBoxDateType.selectedItem as String == "String") {
+                return '"' + valueField.text + '"'
+            }
+            return valueField.text
         }
-        return valueField.text
     }
 
     fun getPrimaryKeyAutoGenerate(): Boolean {
@@ -177,7 +178,7 @@ class InputDialogPrimaryKey : DialogWrapper(true) {
 
     private fun autoGenerateValue(): String {
         return when (comboBoxDateType.selectedItem) {
-            "String" -> """"""
+            "String" -> """"""""
             "Int", "Long", "Byte" -> "0"
             // Other options to choose from
             else -> ""

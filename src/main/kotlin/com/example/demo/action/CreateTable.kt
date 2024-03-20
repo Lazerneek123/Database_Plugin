@@ -1,6 +1,6 @@
 package com.example.demo.action
 
-import com.example.demo.generator.GeneratorCreateTable
+import com.example.demo.generator.CreateTable
 import com.example.demo.input.InputDialogEntity
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -84,7 +84,7 @@ class CreateTable : AnAction() {
                 val file = directory?.createChildData(this, fileName)
 
                 // Write the contents of the file (you can also use templates to generate code)
-                val content = GeneratorCreateTable().generate(
+                val content = CreateTable().generate(
                     packagePath,
                     inputDialog.getTableName(),
                     inputDialog.getPrimaryKeysData(),

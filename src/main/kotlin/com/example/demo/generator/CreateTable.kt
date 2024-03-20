@@ -3,7 +3,7 @@ package com.example.demo.generator
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 
-class GeneratorCreateTable {
+class CreateTable {
     private var content = ""
 
     fun generate(
@@ -47,13 +47,7 @@ class GeneratorCreateTable {
             val cont = """    
                     @PrimaryKey(autoGenerate = $autoGenerate)
                     @ColumnInfo(name = "$name")
-                    private var $name: $dataType = ${
-                if (!autoGenerate) {
-                    value
-                } else {
-                    0
-                }
-            }"""
+                    private var $name: $dataType = $value"""
             content += cont
 
             content += """                    

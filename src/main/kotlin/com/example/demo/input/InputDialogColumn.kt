@@ -113,14 +113,16 @@ class InputDialogColumn : DialogWrapper(true) {
                 comboBoxBoolean.isEnabled =
                     !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
                 comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isEnabled = false
+                valueField.isVisible = false
+                valueField.isEnabled = comboBoxDateType.selectedItem != "Boolean"
                 nullableCheckBox.isSelected = false
             } else if (e.stateChange == ItemEvent.DESELECTED) {
                 // If the checkBox is not checked, set isActionEnabled to false
                 comboBoxBoolean.isEnabled =
                     !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
                 comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isEnabled = true
+                valueField.isVisible = true
+                valueField.isEnabled = comboBoxDateType.selectedItem != "Boolean"
             }
             checkConditions()
         }
@@ -134,13 +136,15 @@ class InputDialogColumn : DialogWrapper(true) {
                 comboBoxBoolean.isEnabled =
                     !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
                 comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isEnabled = false
+                valueField.isVisible = true
+                //valueField.isEnabled = true
                 valueAutoGenerateCheckBox.isSelected = false
             } else if (e.stateChange == ItemEvent.DESELECTED) {
                 comboBoxBoolean.isEnabled =
                     !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
                 comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isEnabled = true
+                valueField.isVisible = false
+                //valueField.isEnabled = false
             }
             checkConditions()
         }
@@ -211,13 +215,14 @@ class InputDialogColumn : DialogWrapper(true) {
             if (comboBoxBoolean.isVisible) {
                 return comboBoxBoolean.selectedItem as String
             } else {
-                if (comboBoxDateType.selectedItem as String == "String") {
-                    return '"' + valueField.text + '"'
-                }
                 if (valueAutoGenerateCheckBox.isSelected) {
                     return autoGenerateValue()
+                } else {
+                    if (comboBoxDateType.selectedItem as String == "String") {
+                        return '"' + valueField.text + '"'
+                    }
+                    return valueField.text
                 }
-                return valueField.text
             }
         } else {
             return "null"
@@ -226,7 +231,7 @@ class InputDialogColumn : DialogWrapper(true) {
 
     private fun autoGenerateValue(): String {
         return when (comboBoxDateType.selectedItem) {
-            "String" -> """"""
+            "String" -> """"""""
             "Int", "Long", "Byte" -> "0"
             "Double" -> "0.0"
             "Boolean" -> "true"
