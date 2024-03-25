@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 
 class Main : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
-        event.project?.showNotification("Hello World")
+        event.project?.showNotification("Plugin installed successfully!")
     }
 
     private fun Project.showNotification(message: String) {

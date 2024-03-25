@@ -20,7 +20,8 @@
     <depends>com.intellij.modules.platform</depends>
 
     <actions>
-        <action id="com.example.demo.Main" class="com.example.demo.Main" text="Database" icon="AllIcons.Actions.Properties"
+        <action id="com.example.demo.Main" class="com.example.demo.Main" text="Database"
+                icon="AllIcons.Actions.Properties"
                 description="Plugin description">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl J"/>
@@ -28,17 +29,31 @@
     </actions>
 
     <actions>
-        <action id="com.example.demo.action.CreateTable" class="com.example.demo.action.CreateTable"
-                text="Create Table (Kotlin)" icon="AllIcons.Actions.AddFile"
-                description="Create table">
-            <add-to-group group-id="NewGroup" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl L"/>
-        </action>
+        <group
+                id="org.intellij.sdk.action.GroupedActions"
+                text="Database Room"
+                popup="true"
+                icon="AllIcons.Actions.GroupByPrefix">
+            <add-to-group
+                    group-id="NewGroup"
+                    anchor="first"/>
+            <action id="com.example.demo.action.CreateTable"
+                    class="com.example.demo.action.CreateTable"
+                    text="Create Table (Kotlin)"
+                    icon="AllIcons.General.ProjectTab"
+                    description="Create table">
+            </action>
+            <action id="com.example.demo.action.CreateDAO"
+                    class="com.example.demo.action.CreateDAO"
+                    text="Create DAO (Kotlin)"
+                    icon="AllIcons.General.TodoQuestion"
+                    description="Create a new DAO">
+            </action>
+        </group>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Custom Notification Group"
-                           displayType="BALLOON"/>
+        <notificationGroup id="Custom Notification Group" displayType="BALLOON"/>
     </extensions>
 
 </idea-plugin>
