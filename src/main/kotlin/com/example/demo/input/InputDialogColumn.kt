@@ -104,48 +104,41 @@ class InputDialogColumn : DialogWrapper(true) {
         val valueAutoPanel = JPanel()
         valueAutoPanel.layout = BoxLayout(valueAutoPanel, BoxLayout.Y_AXIS)
 
-        valueAutoGenerateCheckBox.isSelected = true
+        valueAutoGenerateCheckBox.isSelected = false
         valueField.isEnabled = false
         // We add an event listener for the checkBox
         valueAutoGenerateCheckBox.addItemListener { e ->
             if (e.stateChange == ItemEvent.SELECTED) {
-                // If the checkBox is checked, set isActionEnabled to true
-                comboBoxBoolean.isEnabled =
-                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isVisible = false
-                valueField.isEnabled = comboBoxDateType.selectedItem != "Boolean"
                 nullableCheckBox.isSelected = false
-            } else if (e.stateChange == ItemEvent.DESELECTED) {
-                // If the checkBox is not checked, set isActionEnabled to false
-                comboBoxBoolean.isEnabled =
-                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isVisible = true
-                valueField.isEnabled = comboBoxDateType.selectedItem != "Boolean"
             }
+            // If the checkBox is checked, set isActionEnabled to true
+            comboBoxBoolean.isEnabled =
+                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+            comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
+            valueField.isEnabled =
+                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem != "Boolean"
+            valueField.isVisible = comboBoxDateType.selectedItem != "Boolean"
+
             checkConditions()
         }
         valueAutoPanel.add(valueAutoGenerateCheckBox)
 
 
-        nullableCheckBox.isSelected = false
+        nullableCheckBox.isSelected = true
         // We add an event listener for the checkBox
         nullableCheckBox.addItemListener { e ->
             if (e.stateChange == ItemEvent.SELECTED) {
-                comboBoxBoolean.isEnabled =
-                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isVisible = true
-                //valueField.isEnabled = true
                 valueAutoGenerateCheckBox.isSelected = false
-            } else if (e.stateChange == ItemEvent.DESELECTED) {
-                comboBoxBoolean.isEnabled =
-                    !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-                comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-                valueField.isVisible = false
-                //valueField.isEnabled = false
             }
+            // If the checkBox is checked, set isActionEnabled to true
+            comboBoxBoolean.isEnabled =
+                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
+            comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
+
+            valueField.isEnabled =
+                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem != "Boolean"
+            valueField.isVisible = comboBoxDateType.selectedItem != "Boolean"
+
             checkConditions()
         }
 
