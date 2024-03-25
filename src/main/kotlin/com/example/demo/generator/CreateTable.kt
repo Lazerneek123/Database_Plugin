@@ -47,13 +47,8 @@ class CreateTable {
             val cont = """    
                     @PrimaryKey(autoGenerate = $autoGenerate)
                     @ColumnInfo(name = "$name")
-                    private var $name: $dataType = $value"""
+                    var $name: $dataType = $value"""
             content += cont
-
-            content += """                    
-                    fun get${capitalizeFirstLetter(name)}(): $dataType {
-                        return $name
-                    }"""
         }
         return content
     }
