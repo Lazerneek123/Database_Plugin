@@ -1,8 +1,10 @@
 package com.example.demo.action
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.CreateTable
-import com.example.demo.input.InputDialogEntity
+import com.example.demo.generator.CreateTableForRelation
+import com.example.demo.generator.CreateTableRelation
+import com.example.demo.input.InputDialogRelation
+import com.example.demo.model.Column
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -17,7 +19,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.IOException
 
-class CreateTable : AnAction() {
+class CreateRelationTables : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (selectedFile != null) {
@@ -44,20 +46,11 @@ class CreateTable : AnAction() {
         packagePath: String,
         event: AnActionEvent
     ) {
-        val inputDialog = InputDialogEntity()
+        val inputDialog = InputDialogRelation()
         if (inputDialog.showAndGet()) {
-            var fileName = inputDialog.getTableName()
-
-            if (fileName.isNotEmpty()) {
-                // Create a new file with the entered name and extension .kt
-                val name = "${CapitalizeFirstLetter().setString(fileName)}.kt"
-                // Use runWriteAction to access the file system within a write-action
-                ApplicationManager.getApplication().runWriteAction {
-                    createKotlinFile(project, directoryPath, packagePath, name, inputDialog, event)
-                }
-            } else {
-                fileName = "NewDatabaseKotlinFile.kt"
-                createKotlinFile(project, directoryPath, packagePath, fileName, inputDialog, event)
+            // Use runWriteAction to access the file system within a write-action
+            ApplicationManager.getApplication().runWriteAction {
+                createKotlinFiles(project, directoryPath, packagePath, inputDialog, event)
             }
         }
     }
@@ -68,12 +61,11 @@ class CreateTable : AnAction() {
             .createNotification("Database class", message, NotificationType.INFORMATION).notify(this)
     }
 
-    private fun createKotlinFile(
+    private fun createKotlinFiles(
         project: Project,
         directoryPath: String,
         packagePath: String,
-        fileName: String,
-        inputDialog: InputDialogEntity,
+        inputDialog: InputDialogRelation,
         event: AnActionEvent
     ) {
         try {
@@ -81,24 +73,63 @@ class CreateTable : AnAction() {
             WriteCommandAction.runWriteCommandAction(project) {
                 // Create a file
                 val directory = LocalFileSystem.getInstance().findFileByPath(directoryPath)
+                // Create a new file with the entered name and extension .kt
+                var name = "${CapitalizeFirstLetter().setString(inputDialog.getTableName1())}.kt"
+                var file = directory?.createChildData(this, name)
 
-                val file = directory?.createChildData(this, fileName)
-
-                // Write the contents of the file (you can also use templates to generate code)
-                val content = CreateTable().generate(
+                var createTableForRelation = CreateTableForRelation()
+                var content = createTableForRelation.generate(
                     packagePath,
-                    inputDialog.getTableName(),
-                    inputDialog.getPrimaryKeysData(),
-                    inputDialog.getColumnsData()
+                    inputDialog.getTableName1(),
+                    inputDialog.getTableName2(),
+                    inputDialog.getTableNameRelation(),
+                    inputDialog.getPrimaryKey1(),
+                    inputDialog.getPrimaryKey2(),
+                    listOf(Column("name2", "String", """"Roman"""", false))
                 )
-                file?.setBinaryContent(content.toByteArray())
 
+                file?.setBinaryContent(content.toByteArray())
+                event.project?.showNotification("The class is successfully created!")
+                // Open a new file in a tab
+                openFileInEditor(project, file!!)
+
+                name = "${CapitalizeFirstLetter().setString(inputDialog.getTableName2())}.kt"
+                file = directory?.createChildData(this, name)
+
+                createTableForRelation = CreateTableForRelation()
+                content = createTableForRelation.generate(
+                    packagePath,
+                    inputDialog.getTableName2(),
+                    inputDialog.getTableName1(),
+                    inputDialog.getTableNameRelation(),
+                    inputDialog.getPrimaryKey2(),
+                    inputDialog.getPrimaryKey1(),
+                    listOf(Column("name1", "String", """"Maks"""", false))
+                )
+
+                file?.setBinaryContent(content.toByteArray())
+                event.project?.showNotification("The class is successfully created!")
+                // Open a new file in a tab
+                openFileInEditor(project, file!!)
+
+
+                name = "${CapitalizeFirstLetter().setString(inputDialog.getTableNameRelation())}.kt"
+                file = directory?.createChildData(this, name)
+                val createTableRelation = CreateTableRelation()
+                content = createTableRelation.generate(
+                    packagePath,
+                    inputDialog.getTableName1(),
+                    inputDialog.getTableName2(),
+                    inputDialog.getTableNameRelation(),
+                    inputDialog.getPrimaryKey1(),
+                    inputDialog.getPrimaryKey2()
+                )
+
+                file?.setBinaryContent(content.toByteArray())
                 event.project?.showNotification("The class is successfully created!")
                 // Open a new file in a tab
                 openFileInEditor(project, file!!)
             }
-
-
         } catch (e: IOException) {
             e.printStackTrace()
             event.project?.showNotification(e.message!!)

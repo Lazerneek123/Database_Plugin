@@ -31,7 +31,7 @@
     <actions>
         <group
                 id="org.intellij.sdk.action.GroupedActions"
-                text="Database Room"
+                text="Database Room (Kotlin)"
                 popup="true"
                 icon="AllIcons.Actions.GroupByPrefix">
             <add-to-group
@@ -39,13 +39,19 @@
                     anchor="first"/>
             <action id="com.example.demo.action.CreateTable"
                     class="com.example.demo.action.CreateTable"
-                    text="Create Table (Kotlin)"
+                    text="Create Table"
                     icon="AllIcons.General.ProjectTab"
                     description="Create table">
             </action>
+            <action id="com.example.demo.action.CreateRelationTables"
+                    class="com.example.demo.action.CreateRelationTables"
+                    text="Create Tables and Relations Between Them"
+                    icon="AllIcons.General.TreeSelected"
+                    description="Creation of tables and connections between them">
+            </action>
             <action id="com.example.demo.action.CreateDAO"
                     class="com.example.demo.action.CreateDAO"
-                    text="Create DAO (Kotlin)"
+                    text="Create DAO"
                     icon="AllIcons.General.TodoQuestion"
                     description="Create a new DAO">
             </action>

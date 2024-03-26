@@ -6,7 +6,6 @@ import com.example.demo.model.PrimaryKey
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
-import java.awt.Dimension
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener

@@ -4,53 +4,57 @@ import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 
-class CreateTable {
-    private var content = ""
+class CreateTableForRelation {
+    private var tableContent = ""
 
     fun generate(
         path: String,
-        tableName: String,
-        listPrimaryKeyData: List<PrimaryKey>,
+        tableName1: String,
+        tableName2: String,
+        tableRelationName: String,
+        primaryKeyData1: PrimaryKey,
+        primaryKeyData2: PrimaryKey,
         listColumnData: List<Column>
     ): String {
-        content = """
+        tableContent = """
                 package $path
 
                 import androidx.room.ColumnInfo
                 import androidx.room.Entity
+                import androidx.room.Junction
                 import androidx.room.PrimaryKey
+                import androidx.room.Relation
 
-                @Entity(tableName = "$tableName")
-                data class ${CapitalizeFirstLetter().setString(tableName)}(
+                @Entity(tableName = "$tableName1")
+                data class ${CapitalizeFirstLetter().setString(tableName1)}(
+                ${generatePrimaryKey(primaryKeyData1)}
                 ${generateColumns(listColumnData)}
                 ) {
-                    ${generatePrimaryKeys(listPrimaryKeyData)}       
+                    @Relation(
+                        parentColumn = "${primaryKeyData1.name}_",
+                        entityColumn = "${primaryKeyData2.name}_",
+                        associateBy = Junction(${tableRelationName}::class)
+                    )
+                    var ${tableName2}s: List<${CapitalizeFirstLetter().setString(tableName2)}> = listOf()
                 }
             """.trimIndent()
 
-        return content
+        return tableContent
     }
 
-    private fun generatePrimaryKeys(list: List<PrimaryKey>): String {
+    private fun generatePrimaryKey(primaryKey: PrimaryKey): String {
         var content = ""
 
-        for (i in list.indices) {
-            if (i >= 1) {
-                content += """
-                    
-                """
-            }
-            val autoGenerate = list[i].autoGenerateValue
-            val name = list[i].name
-            val dataType = list[i].dataType
-            val value = list[i].value
+        val autoGenerate = primaryKey.autoGenerateValue
+        val name = primaryKey.name
+        val dataType = primaryKey.dataType
+        val value = primaryKey.value
 
-            val cont = """    
-                    @PrimaryKey(autoGenerate = $autoGenerate)
+        val cont = """    @PrimaryKey(autoGenerate = $autoGenerate)
                     @ColumnInfo(name = "$name")
-                    var $name: $dataType = $value"""
-            content += cont
-        }
+                    var $name: $dataType = $value,"""
+        content += cont
+
         return content
     }
 
