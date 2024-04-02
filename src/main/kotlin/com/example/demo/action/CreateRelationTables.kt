@@ -3,7 +3,7 @@ package com.example.demo.action
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.CreateTableForRelation
 import com.example.demo.generator.CreateTableRelation
-import com.example.demo.input.InputDialogRelation
+import com.example.demo.input.InputDialogChooseRelation
 import com.example.demo.model.Column
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -46,7 +46,7 @@ class CreateRelationTables : AnAction() {
         packagePath: String,
         event: AnActionEvent
     ) {
-        val inputDialog = InputDialogRelation()
+        val inputDialog = InputDialogChooseRelation()
         if (inputDialog.showAndGet()) {
             // Use runWriteAction to access the file system within a write-action
             ApplicationManager.getApplication().runWriteAction {
@@ -65,10 +65,10 @@ class CreateRelationTables : AnAction() {
         project: Project,
         directoryPath: String,
         packagePath: String,
-        inputDialog: InputDialogRelation,
+        inputDialog: InputDialogChooseRelation,
         event: AnActionEvent
     ) {
-        try {
+        /*try {
             // Use WriteCommandAction to perform write-action operations
             WriteCommandAction.runWriteCommandAction(project) {
                 // Create a file
@@ -133,7 +133,7 @@ class CreateRelationTables : AnAction() {
         } catch (e: IOException) {
             e.printStackTrace()
             event.project?.showNotification(e.message!!)
-        }
+        }*/
     }
 
     private fun openFileInEditor(project: Project, file: VirtualFile) {
