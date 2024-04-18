@@ -5,7 +5,7 @@ import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 
 class CreateTableForRelation {
-    private var tableContent = ""
+    private var code = ""
 
     fun generate(
         path: String,
@@ -16,7 +16,7 @@ class CreateTableForRelation {
         primaryKeyData2: PrimaryKey,
         listColumnData: List<Column>
     ): String {
-        tableContent = """
+        code = """
                 package $path
 
                 import androidx.room.ColumnInfo
@@ -26,7 +26,7 @@ class CreateTableForRelation {
                 import androidx.room.Relation
 
                 @Entity(tableName = "$tableName1")
-                data class ${CapitalizeFirstLetter().setString(tableName1)}(
+                data class ${CapitalizeFirstLetter().uppercaseChar(tableName1)}(
                 ${generatePrimaryKey(primaryKeyData1)}
                 ${generateColumns(listColumnData)}
                 ) {
@@ -35,11 +35,11 @@ class CreateTableForRelation {
                         entityColumn = "${primaryKeyData2.name}_",
                         associateBy = Junction(${tableRelationName}::class)
                     )
-                    var ${tableName2}s: List<${CapitalizeFirstLetter().setString(tableName2)}> = listOf()
+                    var ${tableName2}s: List<${CapitalizeFirstLetter().uppercaseChar(tableName2)}> = listOf()
                 }
             """.trimIndent()
 
-        return tableContent
+        return code
     }
 
     private fun generatePrimaryKey(primaryKey: PrimaryKey): String {

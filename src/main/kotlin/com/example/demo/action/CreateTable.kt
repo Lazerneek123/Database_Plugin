@@ -50,7 +50,7 @@ class CreateTable : AnAction() {
 
             if (fileName.isNotEmpty()) {
                 // Create a new file with the entered name and extension .kt
-                val name = "${CapitalizeFirstLetter().setString(fileName)}.kt"
+                val name = "${CapitalizeFirstLetter().uppercaseChar(fileName)}.kt"
                 // Use runWriteAction to access the file system within a write-action
                 ApplicationManager.getApplication().runWriteAction {
                     createKotlinFile(project, directoryPath, packagePath, name, inputDialog, event)

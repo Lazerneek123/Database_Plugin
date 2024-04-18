@@ -5,7 +5,7 @@ import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 
 class CreateTable {
-    private var content = ""
+    private var code = ""
 
     fun generate(
         path: String,
@@ -13,7 +13,7 @@ class CreateTable {
         listPrimaryKeyData: List<PrimaryKey>,
         listColumnData: List<Column>
     ): String {
-        content = """
+        code = """
                 package $path
 
                 import androidx.room.ColumnInfo
@@ -21,14 +21,14 @@ class CreateTable {
                 import androidx.room.PrimaryKey
 
                 @Entity(tableName = "$tableName")
-                data class ${CapitalizeFirstLetter().setString(tableName)}(
+                data class ${CapitalizeFirstLetter().uppercaseChar(tableName)}(
                 ${generateColumns(listColumnData)}
                 ) {
                     ${generatePrimaryKeys(listPrimaryKeyData)}       
                 }
             """.trimIndent()
 
-        return content
+        return code
     }
 
     private fun generatePrimaryKeys(list: List<PrimaryKey>): String {

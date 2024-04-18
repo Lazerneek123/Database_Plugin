@@ -43,11 +43,11 @@
                     icon="AllIcons.General.ProjectTab"
                     description="Create table">
             </action>
-            <action id="com.example.demo.action.CreateRelationTables"
-                    class="com.example.demo.action.CreateRelationTables"
+            <action id="com.example.demo.action.CreateRelations"
+                    class="com.example.demo.action.CreateRelations"
                     text="Create Tables and Relations Between Them"
                     icon="AllIcons.General.TreeSelected"
-                    description="Creation of tables and connections between them">
+                    description="Create tables and relations between them">
             </action>
             <action id="com.example.demo.action.CreateDAO"
                     class="com.example.demo.action.CreateDAO"

@@ -6,14 +6,14 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class InputDialogRelation : DialogWrapper(true) {
+class InputDialogRelationManyToMany : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val nameLabel = JLabel("Choose Relation")
 
 
     init {
-        title = "Relationship"
+        title = "Relations M:M"
         init()
 
         panelRelationTable()
