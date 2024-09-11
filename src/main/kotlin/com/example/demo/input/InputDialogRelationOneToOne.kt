@@ -9,7 +9,6 @@ import java.awt.BorderLayout
 import java.io.File
 import javax.swing.*
 
-
 class InputDialogRelationOneToOne(private var directoryPath: String, private val packagePath: String) :
     DialogWrapper(true) {
     private val panel = JPanel()
@@ -98,8 +97,10 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY // Limit file selection to files only
 
         val result = fileChooser.showOpenDialog(null) // Show file selection dialog
+
         val tableName: String
         val packagePath: String
+        val className: String
 
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFile = fileChooser.selectedFile // Get the selected file
@@ -122,6 +123,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
                 )
                 tableName = "Operation Cancelled"
                 packagePath = ""
+                className = ""
                 label.text = "Operation Cancelled"
                 listModelColumnTable.clear()
 
@@ -143,6 +145,8 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
                     }"
                 }
 
+                className = selectedFile.name
+
                 label.text = "Table Name: $tableName; File Name: ${selectedFile.name} "
 
                 listModelColumnTable.clear()
@@ -156,8 +160,9 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         } else {
             tableName = "Operation Cancelled"
             packagePath = ""
+            className = ""
         }
-        return TableData(tableName, packagePath)
+        return TableData(tableName, packagePath, className)
     }
 
     fun getTableName1(): String {
@@ -197,7 +202,15 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         return pathFile2
     }
 
-    private data class TableData(val tableName: String, val tablePackagePath: String)
+    fun getClassName1(): String {
+        return tableData1.className
+    }
+
+    fun getClassName2(): String {
+        return tableData2.className
+    }
+
+    private data class TableData(val tableName: String, val tablePackagePath: String, val className: String)
 
     override fun createCenterPanel(): JComponent {
         return panel

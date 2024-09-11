@@ -74,7 +74,7 @@ class InputDialogChooseRelation(
                 if (inputDialogRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
-                        createKotlinFiles(inputDialogRelation, inputDialogRelation.getPathFile1())
+                        createKotlinFiles(inputDialogRelation, inputDialogRelation.getPathFile2())
                     }
                 }
             }
@@ -163,7 +163,7 @@ class InputDialogChooseRelation(
                 if (selectedFile.exists()) {
                     var replacementCode = selectedFile.readText()
 
-                    val entityPattern = """@Entity\(tableName = "${inputDialog.getTableName1()}"\)""".toRegex()
+                    val entityPattern = """@Entity\(tableName = "${inputDialog.getTableName2()}"\)""".toRegex()
                     val newEntityAnnotation = entityRelation(inputDialog)
 
                     replacementCode = replacementCode.replace(entityPattern, newEntityAnnotation)
@@ -181,7 +181,7 @@ class InputDialogChooseRelation(
                     }
                     // Overwrite the file with new content
                     selectedFile.writeText(replacementCode)
-                    showNotification("The selected ${inputDialog.getTableName1()} file has been successfully updated!")
+                    showNotification("The selected ${inputDialog.getClassName2()} file has been successfully updated!")
                 } else {
                     showNotification("Selected file does not exist.")
                 }

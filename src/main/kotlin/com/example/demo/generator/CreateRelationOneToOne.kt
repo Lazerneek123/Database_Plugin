@@ -19,7 +19,7 @@ class CreateRelationOneToOne {
         parentColumn: String,
         entityColumn: String
     ): String {
-        nameClass = "${CapitalizeFirstLetter().uppercaseChar(tableName1)}And${
+        nameClass = "${CapitalizeFirstLetter().uppercaseChar(tableName1)}With${
             CapitalizeFirstLetter().uppercaseChar(tableName2)
         }"
 
@@ -51,17 +51,15 @@ class CreateRelationOneToOne {
         parentColumn: String,
         entityColumn: String
     ): String {
-        return """    @Embedded val ${CapitalizeFirstLetter().lowercaseChar(tableName2)}: ${
-            CapitalizeFirstLetter().uppercaseChar(tableName2)
+        return """    @Embedded val ${CapitalizeFirstLetter().lowercaseChar(tableName1)}: ${
+            CapitalizeFirstLetter().uppercaseChar(tableName1)
         },
                     @Relation(
                         parentColumn = "$parentColumn",
                         entityColumn = "$entityColumn"
                     )
-                    val ${CapitalizeFirstLetter().lowercaseChar(tableName1)}: ${
-            CapitalizeFirstLetter().uppercaseChar(
-                tableName1
-            )
+                    val ${CapitalizeFirstLetter().lowercaseChar(tableName2)}: ${
+            CapitalizeFirstLetter().uppercaseChar(tableName2)
         }"""
     }
 
