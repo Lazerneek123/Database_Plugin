@@ -27,6 +27,10 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
     private lateinit var tableData1: TableData
     private lateinit var tableData2: TableData
 
+    private lateinit var pathFile: String
+    private lateinit var pathFile1: String
+    private lateinit var pathFile2: String
+
 
     init {
         title = "Relations 1:1"
@@ -45,6 +49,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         val btnFileChooser1 = JButton("Choose File")
         btnFileChooser1.addActionListener {
             tableData1 = fileChooser(labelInfo1, listModelColumnTable1)
+            pathFile1 = pathFile
             isOKActionEnabled =
                 listModelColumnTable1.elements().toList().isNotEmpty() && listModelColumnTable2.elements().toList()
                     .isNotEmpty()
@@ -61,6 +66,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         val btnFileChooser2 = JButton("Choose File")
         btnFileChooser2.addActionListener {
             tableData2 = fileChooser(labelInfo2, listModelColumnTable2)
+            pathFile2 = pathFile
             isOKActionEnabled =
                 listModelColumnTable1.elements().toList().isNotEmpty() && listModelColumnTable2.elements().toList()
                     .isNotEmpty()
@@ -82,7 +88,10 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         panel.add(relationTable2Panel)
     }
 
-    private fun fileChooser(label: JLabel, listModelColumnTable: DefaultListModel<String>): TableData {
+    private fun fileChooser(
+        label: JLabel,
+        listModelColumnTable: DefaultListModel<String>
+    ): TableData {
         val currentDirectory = File(directoryPath)
 
         val fileChooser = JFileChooser(currentDirectory)
@@ -94,37 +103,56 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFile = fileChooser.selectedFile // Get the selected file
-            label.text = "Selected File: ${selectedFile.absolutePath}"
+            pathFile = selectedFile.path
+            //label.text = "Selected File: ${selectedFile.absolutePath}"
 
             val code = selectedFile.readText().trimIndent()
             val tableNamePattern = """tableName\s*=\s*"([^"]+)"""".toRegex()
             val columnNamePattern = """@ColumnInfo\(name\s*=\s*"([^"]+)"""".toRegex()
+            val foreignKeyPattern = """import androidx.room.ForeignKey""".toRegex()
 
-            val tableNameMatch = tableNamePattern.find(code)
-            tableName = tableNameMatch?.groupValues?.get(1) ?: "Unknown"
+            // Check if the file already contains a ForeignKey relation
+            val foreignKeyMatch = foreignKeyPattern.find(code)
+            if (foreignKeyMatch != null) {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "The selected file already has a link!",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE
+                )
+                tableName = "Operation Cancelled"
+                packagePath = ""
+                label.text = "Operation Cancelled"
+                listModelColumnTable.clear()
 
-            // Getting the file package path
-            val sourceRoot = "src${File.separator}main${File.separator}java${File.separator}"
-            val packagePathWithoutSourceRoot =
-                selectedFile.canonicalFile.parentFile.absolutePath.substringAfterLast(sourceRoot)
-
-            // Path compatibility check
-            packagePath = if (packagePathWithoutSourceRoot.replace(File.separator, ".") == this.packagePath) {
-                ""
             } else {
-                packagePathWithoutSourceRoot.replace(File.separator, ".") + ".${
-                    CapitalizeFirstLetter().uppercaseChar(tableName)
-                }"
+                val tableNameMatch = tableNamePattern.find(code)
+                tableName = tableNameMatch?.groupValues?.get(1) ?: "Unknown"
+
+                // Getting the file package path
+                val sourceRoot = "src${File.separator}main${File.separator}java${File.separator}"
+                val packagePathWithoutSourceRoot =
+                    selectedFile.canonicalFile.parentFile.absolutePath.substringAfterLast(sourceRoot)
+
+                // Path compatibility check
+                packagePath = if (packagePathWithoutSourceRoot.replace(File.separator, ".") == this.packagePath) {
+                    ""
+                } else {
+                    packagePathWithoutSourceRoot.replace(File.separator, ".") + ".${
+                        CapitalizeFirstLetter().uppercaseChar(tableName)
+                    }"
+                }
+
+                label.text = "Table Name: $tableName; File Name: ${selectedFile.name} "
+
+                listModelColumnTable.clear()
+                val columnMatches = columnNamePattern.findAll(code)
+                for (match in columnMatches) {
+                    val columnName = match.groupValues[1]
+                    listModelColumnTable.addElement(columnName)
+                }
             }
 
-            label.text = "Table Name: $tableName; File Name: ${selectedFile.name} "
-
-            listModelColumnTable.clear()
-            val columnMatches = columnNamePattern.findAll(code)
-            for (match in columnMatches) {
-                val columnName = match.groupValues[1]
-                listModelColumnTable.addElement(columnName)
-            }
         } else {
             tableName = "Operation Cancelled"
             packagePath = ""
@@ -159,6 +187,14 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
     fun getEntityColumn(): String {
         return listColumnTable2.selectedValue
+    }
+
+    fun getPathFile1(): String {
+        return pathFile1
+    }
+
+    fun getPathFile2(): String {
+        return pathFile2
     }
 
     private data class TableData(val tableName: String, val tablePackagePath: String)

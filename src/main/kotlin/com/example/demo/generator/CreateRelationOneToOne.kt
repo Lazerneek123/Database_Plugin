@@ -3,7 +3,12 @@ package com.example.demo.generator
 import com.example.demo.element.CapitalizeFirstLetter
 
 class CreateRelationOneToOne {
-    private var code = ""
+    private lateinit var code: String
+    private lateinit var nameClass: String
+
+    fun getNameClass(): String {
+        return nameClass
+    }
 
     fun generate(
         path: String,
@@ -14,17 +19,17 @@ class CreateRelationOneToOne {
         parentColumn: String,
         entityColumn: String
     ): String {
+        nameClass = "${CapitalizeFirstLetter().uppercaseChar(tableName1)}And${
+            CapitalizeFirstLetter().uppercaseChar(tableName2)
+        }"
+
         code = """
                 package $path
 
                 import androidx.room.Embedded
                 import androidx.room.Relation${checkPackage(packagePath1)}${checkPackage(packagePath2)}
 
-                data class ${CapitalizeFirstLetter().uppercaseChar(tableName1)}And${
-            CapitalizeFirstLetter().uppercaseChar(
-                tableName2
-            )
-        }(
+                data class ${nameClass}(
                 ${generateColumns(tableName1, tableName2, parentColumn, entityColumn)}
                 )""".trimIndent()
 

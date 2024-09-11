@@ -2,6 +2,7 @@ package com.example.demo.input
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.CreateRelationOneToOne
+import com.example.demo.generator.entityRelation
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -19,6 +20,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.File
 import java.io.IOException
 import javax.swing.BoxLayout
 import javax.swing.JComponent
@@ -26,11 +28,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 class InputDialogChooseRelation(
-    private val directoryPath: String,
-    private val packagePath: String,
-    private val project: Project
-) :
-    DialogWrapper(true) {
+    private val directoryPath: String, private val packagePath: String, private val project: Project
+) : DialogWrapper(true) {
     private val panel = JPanel()
     private val nameLabel = JLabel("Choose Relation")
 
@@ -68,7 +67,6 @@ class InputDialogChooseRelation(
         val labelRelationIcon1 = JLabel(scaledIcon)
         labelRelationIcon1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                // Click your own InputDialog
                 val inputDialogRelation = InputDialogRelationOneToOne(directoryPath, packagePath)
                 inputDialogRelation.show()
 
@@ -76,7 +74,7 @@ class InputDialogChooseRelation(
                 if (inputDialogRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
-                        createKotlinFiles(inputDialogRelation)
+                        createKotlinFiles(inputDialogRelation, inputDialogRelation.getPathFile1())
                     }
                 }
             }
@@ -130,36 +128,67 @@ class InputDialogChooseRelation(
     }
 
     private fun createKotlinFiles(
-        inputDialog: InputDialogRelationOneToOne
+        inputDialog: InputDialogRelationOneToOne, pathFile: String
     ) {
         try {
-            // Use WriteCommandAction to perform write-action operations
+            // A separate action for creating a new file
             WriteCommandAction.runWriteCommandAction(project) {
-                // Create a file
-                val directory = LocalFileSystem.getInstance().findFileByPath(directoryPath)
-                // Create a new file with the entered name and extension .kt
+
+                val directory = LocalFileSystem.getInstance().findFileByPath(this.directoryPath)
                 val name = "${CapitalizeFirstLetter().uppercaseChar(inputDialog.getRelationName())}.kt"
                 val file = directory?.createChildData(this, name)
 
-                val code = CreateRelationOneToOne().generate(
-                    packagePath,
-                    inputDialog.getTablePackagePath1(),
-                    inputDialog.getTablePackagePath2(),
-                    inputDialog.getTableName1(),
-                    inputDialog.getTableName2(),
-                    inputDialog.getParentColumn(),
-                    inputDialog.getEntityColumn()
-                )
+                if (file != null) {
+                    val createRelationOneToOne = CreateRelationOneToOne()
+                    val code = createRelationOneToOne.generate(
+                        packagePath,
+                        inputDialog.getTablePackagePath1(),
+                        inputDialog.getTablePackagePath2(),
+                        inputDialog.getTableName1(),
+                        inputDialog.getTableName2(),
+                        inputDialog.getParentColumn(),
+                        inputDialog.getEntityColumn()
+                    )
+                    file.setBinaryContent(code.toByteArray())
+                    showNotification("The class ${createRelationOneToOne.getNameClass()} is successfully created!")
+                    openFileInEditor(project, file)
+                } else {
+                    showNotification("Unable to create the file. It might already exist.")
+                }
+            }
 
-                file?.setBinaryContent(code.toByteArray())
-                showNotification("The class is successfully created!")
-                // Open a new file in a tab
-                openFileInEditor(project, file!!)
+            // A separate action for editing an existing file
+            WriteCommandAction.runWriteCommandAction(project) {
+                val selectedFile = File(pathFile)
+                if (selectedFile.exists()) {
+                    var replacementCode = selectedFile.readText()
 
+                    val entityPattern = """@Entity\(tableName = "${inputDialog.getTableName1()}"\)""".toRegex()
+                    val newEntityAnnotation = entityRelation(inputDialog)
+
+                    replacementCode = replacementCode.replace(entityPattern, newEntityAnnotation)
+
+                    // Check if the ForeignKey import already exists, and add it if not
+                    val importForeignKey = "import androidx.room.ForeignKey"
+                    if (!replacementCode.contains(importForeignKey)) {
+                        // We add the import after other imports
+                        val importPosition = replacementCode.indexOf("import androidx.room.Entity")
+                        if (importPosition != -1) {
+                            val beforeImports = replacementCode.substring(0, importPosition)
+                            val afterImports = replacementCode.substring(importPosition)
+                            replacementCode = beforeImports + "$importForeignKey\n" + afterImports
+                        }
+                    }
+                    // Overwrite the file with new content
+                    selectedFile.writeText(replacementCode)
+                    showNotification("The selected ${inputDialog.getTableName1()} file has been successfully updated!")
+                } else {
+                    showNotification("Selected file does not exist.")
+                }
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            showNotification(e.message!!)
+            showNotification(e.message ?: "An error occurred.")
         }
     }
 
