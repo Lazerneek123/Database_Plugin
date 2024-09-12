@@ -2,7 +2,7 @@ package com.example.demo.generator
 
 import com.example.demo.element.CapitalizeFirstLetter
 
-class CreateRelationOneToOne {
+class CreateRelationOneToMany {
     private lateinit var code: String
     private lateinit var nameClass: String
 
@@ -58,7 +58,7 @@ class CreateRelationOneToOne {
                         parentColumn = "$parentColumn",
                         entityColumn = "$entityColumn"
                     )
-                    val ${CapitalizeFirstLetter().lowercaseChar(className2)}: $className2"""
+                    val ${CapitalizeFirstLetter().lowercaseChar(className2)}s: List<$className2>"""
     }
 
     private fun columnQuestionMark(b: Boolean): String {

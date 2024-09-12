@@ -1,6 +1,7 @@
 package com.example.demo.input
 
 import com.example.demo.element.CapitalizeFirstLetter
+import com.example.demo.generator.CreateRelationOneToMany
 import com.example.demo.generator.CreateRelationOneToOne
 import com.example.demo.generator.entityRelation
 import com.intellij.icons.AllIcons
@@ -74,7 +75,11 @@ class InputDialogChooseRelation(
                 if (inputDialogRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
-                        createKotlinFiles(inputDialogRelation, inputDialogRelation.getPathFile2())
+                        createKotlinFiles(
+                            inputDialogRelation,
+                            inputDialogRelation.getPathFile2(),
+                            "1:1"
+                        )
                     }
                 }
             }
@@ -85,11 +90,25 @@ class InputDialogChooseRelation(
         relationPanelOneToOne.add(labelRelation1, constraints)
         constraints.gridy--
 
+
         val relationPanelOneToMany = JPanel(GridBagLayout())
         val labelRelationIcon2 = JLabel(scaledIcon)
         labelRelationIcon2.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
+                val inputDialogRelation = InputDialogRelationOneToOne(directoryPath, packagePath)
+                inputDialogRelation.show()
 
+                // Get the results when you click the OK button
+                if (inputDialogRelation.isOK) {
+                    // Use runWriteAction to access the file system within a write-action
+                    ApplicationManager.getApplication().runWriteAction {
+                        createKotlinFiles(
+                            inputDialogRelation,
+                            inputDialogRelation.getPathFile2(),
+                            "1:M"
+                        )
+                    }
+                }
             }
         })
         val labelRelation2 = JLabel("1 : M")
@@ -97,6 +116,7 @@ class InputDialogChooseRelation(
         constraints.gridy++
         relationPanelOneToMany.add(labelRelation2, constraints)
         constraints.gridy--
+
 
         val relationPanelManyToMany = JPanel(GridBagLayout())
         val labelRelationIcon3 = JLabel(scaledIcon)
@@ -128,7 +148,9 @@ class InputDialogChooseRelation(
     }
 
     private fun createKotlinFiles(
-        inputDialog: InputDialogRelationOneToOne, pathFile: String
+        inputDialog: InputDialogRelationOneToOne,
+        pathFile: String,
+        relation: String
     ) {
         try {
             // A separate action for creating a new file
@@ -139,18 +161,40 @@ class InputDialogChooseRelation(
                 val file = directory?.createChildData(this, name)
 
                 if (file != null) {
-                    val createRelationOneToOne = CreateRelationOneToOne()
-                    val code = createRelationOneToOne.generate(
-                        packagePath,
-                        inputDialog.getTablePackagePath1(),
-                        inputDialog.getTablePackagePath2(),
-                        inputDialog.getTableName1(),
-                        inputDialog.getTableName2(),
-                        inputDialog.getParentColumn(),
-                        inputDialog.getEntityColumn()
-                    )
+                    var code = ""
+                    if (relation == "1:1") {
+                        val createRelationOneToOne = CreateRelationOneToOne()
+                        code = createRelationOneToOne.generate(
+                            packagePath,
+                            inputDialog.getTablePackagePath1(),
+                            inputDialog.getTablePackagePath2(),
+                            inputDialog.getClassName1(),
+                            inputDialog.getClassName2(),
+                            inputDialog.getTableName1(),
+                            inputDialog.getTableName2(),
+                            inputDialog.getParentColumn(),
+                            inputDialog.getEntityColumn()
+                        )
+                        showNotification("The class ${createRelationOneToOne.getNameClass()} is successfully created!")
+                    }
+
+                    if (relation == "1:M") {
+                        val createRelationOneToMany = CreateRelationOneToMany()
+                        code = createRelationOneToMany.generate(
+                            packagePath,
+                            inputDialog.getTablePackagePath1(),
+                            inputDialog.getTablePackagePath2(),
+                            inputDialog.getClassName1(),
+                            inputDialog.getClassName2(),
+                            inputDialog.getTableName1(),
+                            inputDialog.getTableName2(),
+                            inputDialog.getParentColumn(),
+                            inputDialog.getEntityColumn()
+                        )
+                        showNotification("The class ${createRelationOneToMany.getNameClass()} is successfully created!")
+                    }
+
                     file.setBinaryContent(code.toByteArray())
-                    showNotification("The class ${createRelationOneToOne.getNameClass()} is successfully created!")
                     openFileInEditor(project, file)
                 } else {
                     showNotification("Unable to create the file. It might already exist.")

@@ -145,7 +145,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
                     }"
                 }
 
-                className = selectedFile.name
+                className = getClassNameFromFile(selectedFile)!!
 
                 label.text = "Table Name: $tableName; File Name: ${selectedFile.name} "
 
@@ -165,6 +165,16 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         return TableData(tableName, packagePath, className)
     }
 
+    fun getClassNameFromFile(file: File): String? {
+        val fileContent = file.readText()
+
+        // We use a regular expression to find the class declaration
+        val classPattern = """class\s+([A-Za-z_]\w*)""".toRegex()
+        val matchResult = classPattern.find(fileContent)
+
+        return matchResult?.groupValues?.get(1)
+    }
+
     fun getTableName1(): String {
         return tableData1.tableName
     }
@@ -182,7 +192,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
     }
 
     fun getRelationName(): String {
-        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + "And" +
+        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + "With" +
                 CapitalizeFirstLetter().uppercaseChar(tableData2.tableName)
     }
 
