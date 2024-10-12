@@ -1,8 +1,8 @@
 package com.example.demo.generator
 
-import com.example.demo.input.InputDialogRelationOneToOne
+import com.example.demo.input.InputDialogRelation
 
-fun entityRelation(inputDialog: InputDialogRelationOneToOne): String {
+fun entityRelation(inputDialog: InputDialogRelation): String {
     return """
                 @Entity(
                     tableName = "${inputDialog.getTableName2()}",

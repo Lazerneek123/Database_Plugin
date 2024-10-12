@@ -3,6 +3,7 @@ package com.example.demo.action
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.CreateTable
 import com.example.demo.input.InputDialogEntity
+import com.example.demo.tableConfig.TableCreate
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -86,10 +87,12 @@ class CreateTable : AnAction() {
 
                 // Write the contents of the file (you can also use templates to generate code)
                 val content = CreateTable().generate(
-                    packagePath,
-                    inputDialog.getTableName(),
-                    inputDialog.getPrimaryKeysData(),
-                    inputDialog.getColumnsData()
+                    TableCreate(
+                        packagePath,
+                        inputDialog.getTableName(),
+                        inputDialog.getPrimaryKeysData(),
+                        inputDialog.getColumnsData()
+                    )
                 )
                 file?.setBinaryContent(content.toByteArray())
 

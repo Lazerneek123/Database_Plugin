@@ -3,28 +3,26 @@ package com.example.demo.generator
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
+import com.example.demo.tableConfig.TableCreate
 
 class CreateTable {
     private var code = ""
 
     fun generate(
-        path: String,
-        tableName: String,
-        listPrimaryKeyData: List<PrimaryKey>,
-        listColumnData: List<Column>
+        config: TableCreate
     ): String {
         code = """
-                package $path
+                package ${config.getPath()}
 
                 import androidx.room.ColumnInfo
                 import androidx.room.Entity
                 import androidx.room.PrimaryKey
 
-                @Entity(tableName = "$tableName")
-                data class ${CapitalizeFirstLetter().uppercaseChar(tableName)}(
-                ${generateColumns(listColumnData)}
+                @Entity(tableName = "${config.getTableName()}")
+                data class ${CapitalizeFirstLetter().uppercaseChar(config.getTableName())}(
+                ${generateColumns(config.getListColumnData())}
                 ) {
-                    ${generatePrimaryKeys(listPrimaryKeyData)}       
+                    ${generatePrimaryKeys(config.getListPrimaryKeyData())}       
                 }
             """.trimIndent()
 

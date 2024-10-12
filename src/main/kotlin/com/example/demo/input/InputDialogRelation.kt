@@ -2,6 +2,7 @@ package com.example.demo.input
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.util.IconUtil
@@ -9,7 +10,12 @@ import java.awt.BorderLayout
 import java.io.File
 import javax.swing.*
 
-class InputDialogRelationOneToOne(private var directoryPath: String, private val packagePath: String) :
+class InputDialogRelation(
+    private var directoryPath: String,
+    private val packagePath: String,
+    private val project: Project,
+    relation: String
+    ) :
     DialogWrapper(true) {
     private val panel = JPanel()
 
@@ -30,9 +36,12 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
     private lateinit var pathFile1: String
     private lateinit var pathFile2: String
 
+    private var variables1: MutableList<Pair<String, String>> = mutableListOf()
+    private var variables2: MutableList<Pair<String, String>> = mutableListOf()
+
 
     init {
-        title = "Relations 1:1"
+        title = "Relations " + relation
 
         init()
 
@@ -47,7 +56,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
         val btnFileChooser1 = JButton("Choose File")
         btnFileChooser1.addActionListener {
-            tableData1 = fileChooser(labelInfo1, listModelColumnTable1)
+            tableData1 = fileChooser(labelInfo1, listModelColumnTable1, variables1)
             pathFile1 = pathFile
             isOKActionEnabled =
                 listModelColumnTable1.elements().toList().isNotEmpty() && listModelColumnTable2.elements().toList()
@@ -64,7 +73,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
         val btnFileChooser2 = JButton("Choose File")
         btnFileChooser2.addActionListener {
-            tableData2 = fileChooser(labelInfo2, listModelColumnTable2)
+            tableData2 = fileChooser(labelInfo2, listModelColumnTable2, variables2)
             pathFile2 = pathFile
             isOKActionEnabled =
                 listModelColumnTable1.elements().toList().isNotEmpty() && listModelColumnTable2.elements().toList()
@@ -89,7 +98,8 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
     private fun fileChooser(
         label: JLabel,
-        listModelColumnTable: DefaultListModel<String>
+        listModelColumnTable: DefaultListModel<String>,
+        variables: MutableList<Pair<String, String>>
     ): TableData {
         val currentDirectory = File(directoryPath)
 
@@ -102,10 +112,27 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         val packagePath: String
         val className: String
 
+
+
+
+        //variables.add("variableName" to "Int")
+
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFile = fileChooser.selectedFile // Get the selected file
             pathFile = selectedFile.path
             //label.text = "Selected File: ${selectedFile.absolutePath}"
+
+
+
+            val variablePattern = """var (\w+): (\w+)""".toRegex()
+            val matches = variablePattern.findAll(selectedFile.readText())
+            matches.forEach { match ->
+                val variableName = match.groupValues[1]
+                val variableType = match.groupValues[2]
+                variables.add(variableName to variableType)
+            }
+
+
 
             val code = selectedFile.readText().trimIndent()
             val tableNamePattern = """tableName\s*=\s*"([^"]+)"""".toRegex()
@@ -117,7 +144,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
             if (foreignKeyMatch != null) {
                 JOptionPane.showMessageDialog(
                     null,
-                    "The selected file already has a link!",
+                    "The selected file already has a relation!",
                     "Warning",
                     JOptionPane.WARNING_MESSAGE
                 )
@@ -165,7 +192,7 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         return TableData(tableName, packagePath, className)
     }
 
-    fun getClassNameFromFile(file: File): String? {
+    private fun getClassNameFromFile(file: File): String? {
         val fileContent = file.readText()
 
         // We use a regular expression to find the class declaration
@@ -183,6 +210,10 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
         return tableData2.tableName
     }
 
+    fun getCrossRefName(): String {
+        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + CapitalizeFirstLetter().uppercaseChar(tableData2.tableName) + "CrossRef"
+    }
+
     fun getTablePackagePath1(): String {
         return tableData1.tablePackagePath
     }
@@ -194,6 +225,11 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
     fun getRelationName(): String {
         return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + "With" +
                 CapitalizeFirstLetter().uppercaseChar(tableData2.tableName)
+    }
+
+    fun getRelationManyToManyName(): String {
+        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + "sWith" +
+                CapitalizeFirstLetter().uppercaseChar(tableData2.tableName) + "s"
     }
 
     fun getParentColumn(): String {
@@ -218,6 +254,14 @@ class InputDialogRelationOneToOne(private var directoryPath: String, private val
 
     fun getClassName2(): String {
         return tableData2.className
+    }
+
+    fun getVariables1(): MutableList<Pair<String, String>> {
+        return variables1
+    }
+
+    fun getVariables2(): MutableList<Pair<String, String>> {
+        return variables2
     }
 
     private data class TableData(val tableName: String, val tablePackagePath: String, val className: String)

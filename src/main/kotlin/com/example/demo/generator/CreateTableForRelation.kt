@@ -3,21 +3,16 @@ package com.example.demo.generator
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
+import com.example.demo.tableConfig.Relation
 
 class CreateTableForRelation {
     private var code = ""
 
     fun generate(
-        path: String,
-        tableName1: String,
-        tableName2: String,
-        tableRelationName: String,
-        primaryKeyData1: PrimaryKey,
-        primaryKeyData2: PrimaryKey,
-        listColumnData: List<Column>
+        config: Relation
     ): String {
         code = """
-                package $path
+                package ${config.getPath()}
 
                 import androidx.room.ColumnInfo
                 import androidx.room.Entity
@@ -25,17 +20,17 @@ class CreateTableForRelation {
                 import androidx.room.PrimaryKey
                 import androidx.room.Relation
 
-                @Entity(tableName = "$tableName1")
-                data class ${CapitalizeFirstLetter().uppercaseChar(tableName1)}(
-                ${generatePrimaryKey(primaryKeyData1)}
-                ${generateColumns(listColumnData)}
+                @Entity(tableName = "${config.getTableName1()}")
+                data class ${CapitalizeFirstLetter().uppercaseChar(config.getTableName1())}(
+                ${generatePrimaryKey(config.getPrimaryKeyData1())}
+                ${generateColumns(config.getListColumnData())}
                 ) {
                     @Relation(
-                        parentColumn = "${primaryKeyData1.name}_",
-                        entityColumn = "${primaryKeyData2.name}_",
-                        associateBy = Junction(${tableRelationName}::class)
+                        parentColumn = "${config.getPrimaryKeyData1().name}_",
+                        entityColumn = "${config.getPrimaryKeyData2().name}_",
+                        associateBy = Junction(${config.getTableRelationName()}::class)
                     )
-                    var ${tableName2}s: List<${CapitalizeFirstLetter().uppercaseChar(tableName2)}> = listOf()
+                    var ${config.getTableName2()}s: List<${CapitalizeFirstLetter().uppercaseChar(config.getTableName2())}> = listOf()
                 }
             """.trimIndent()
 

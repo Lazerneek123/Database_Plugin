@@ -1,9 +1,7 @@
 package com.example.demo.input
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.CreateRelationOneToMany
-import com.example.demo.generator.CreateRelationOneToOne
-import com.example.demo.generator.entityRelation
+import com.example.demo.generator.*
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -29,7 +27,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 class InputDialogChooseRelation(
-    private val directoryPath: String, private val packagePath: String, private val project: Project
+    private val directoryPath: String, private val packagePath: String,
+    private val project: Project
 ) : DialogWrapper(true) {
     private val panel = JPanel()
     private val nameLabel = JLabel("Choose Relation")
@@ -68,7 +67,7 @@ class InputDialogChooseRelation(
         val labelRelationIcon1 = JLabel(scaledIcon)
         labelRelationIcon1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelationOneToOne(directoryPath, packagePath)
+                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "1:1")
                 inputDialogRelation.show()
 
                 // Get the results when you click the OK button
@@ -95,7 +94,7 @@ class InputDialogChooseRelation(
         val labelRelationIcon2 = JLabel(scaledIcon)
         labelRelationIcon2.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelationOneToOne(directoryPath, packagePath)
+                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "1:M")
                 inputDialogRelation.show()
 
                 // Get the results when you click the OK button
@@ -122,11 +121,19 @@ class InputDialogChooseRelation(
         val labelRelationIcon3 = JLabel(scaledIcon)
         labelRelationIcon3.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelationManyToMany()
+                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "M:M")
                 inputDialogRelation.show()
 
+                // Get the results when you click the OK button
                 if (inputDialogRelation.isOK) {
-
+                    // Use runWriteAction to access the file system within a write-action
+                    ApplicationManager.getApplication().runWriteAction {
+                        createKotlinFiles(
+                            inputDialogRelation,
+                            inputDialogRelation.getPathFile2(),
+                            "M:M"
+                        )
+                    }
                 }
             }
         })
@@ -148,16 +155,22 @@ class InputDialogChooseRelation(
     }
 
     private fun createKotlinFiles(
-        inputDialog: InputDialogRelationOneToOne,
+        inputDialog: InputDialogRelation,
         pathFile: String,
         relation: String
     ) {
+        val directory = LocalFileSystem.getInstance().findFileByPath(this.directoryPath)
+
+
+
         try {
             // A separate action for creating a new file
             WriteCommandAction.runWriteCommandAction(project) {
-
-                val directory = LocalFileSystem.getInstance().findFileByPath(this.directoryPath)
-                val name = "${CapitalizeFirstLetter().uppercaseChar(inputDialog.getRelationName())}.kt"
+                val name = if (relation == "M:M") {
+                    "${CapitalizeFirstLetter().uppercaseChar(inputDialog.getCrossRefName())}.kt"
+                } else {
+                    "${CapitalizeFirstLetter().uppercaseChar(inputDialog.getRelationName())}.kt"
+                }
                 val file = directory?.createChildData(this, name)
 
                 if (file != null) {
@@ -194,6 +207,43 @@ class InputDialogChooseRelation(
                         showNotification("The class ${createRelationOneToMany.getNameClass()} is successfully created!")
                     }
 
+                    if (relation == "M:M") {
+                        val createCrossRef = CreateCrossRef()
+
+
+                        var parentColumnName = ""
+                        var entityColumnName = ""
+                        var dateTypeParent = ""
+                        var dateTypeEntity = ""
+
+                        inputDialog.getVariables1().forEach { match ->
+                            if (inputDialog.getParentColumn() == match.first) {
+                                parentColumnName = match.first
+                                dateTypeParent = match.second
+                            }
+                        }
+
+                        inputDialog.getVariables2().forEach { match ->
+                            if (inputDialog.getEntityColumn() == match.first) {
+                                entityColumnName = match.first
+                                dateTypeEntity = match.second
+                            }
+                        }
+
+
+                        code = createCrossRef.generate(
+                            packagePath,
+                            inputDialog.getCrossRefName(),
+                            inputDialog.getParentColumn(),
+                            inputDialog.getEntityColumn(),
+                            parentColumnName,
+                            entityColumnName,
+                            dateTypeParent,
+                            dateTypeEntity
+                        )
+                        showNotification("The class ${inputDialog.getCrossRefName()} is successfully created!")
+                    }
+
                     file.setBinaryContent(code.toByteArray())
                     openFileInEditor(project, file)
                 } else {
@@ -201,35 +251,64 @@ class InputDialogChooseRelation(
                 }
             }
 
-            // A separate action for editing an existing file
-            WriteCommandAction.runWriteCommandAction(project) {
-                val selectedFile = File(pathFile)
-                if (selectedFile.exists()) {
-                    var replacementCode = selectedFile.readText()
+            if (relation == "M:M") {
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val name = "${CapitalizeFirstLetter().uppercaseChar(inputDialog.getRelationManyToManyName())}.kt"
+                    val file = directory?.createChildData(this, name)
 
-                    val entityPattern = """@Entity\(tableName = "${inputDialog.getTableName2()}"\)""".toRegex()
-                    val newEntityAnnotation = entityRelation(inputDialog)
+                    if (file != null) {
+                        val createRelationManyToMany = CreateRelationManyToMany()
+                        val code = createRelationManyToMany.generate(
+                            packagePath,
+                            inputDialog.getTablePackagePath1(),
+                            inputDialog.getTablePackagePath2(),
+                            inputDialog.getClassName1(),
+                            inputDialog.getClassName2(),
+                            inputDialog.getCrossRefName(),
+                            inputDialog.getRelationManyToManyName(),
+                            inputDialog.getParentColumn(),
+                            inputDialog.getEntityColumn()
+                        )
+                        showNotification("The class ${createRelationManyToMany.getNameClass()} is successfully created!")
 
-                    replacementCode = replacementCode.replace(entityPattern, newEntityAnnotation)
-
-                    // Check if the ForeignKey import already exists, and add it if not
-                    val importForeignKey = "import androidx.room.ForeignKey"
-                    if (!replacementCode.contains(importForeignKey)) {
-                        // We add the import after other imports
-                        val importPosition = replacementCode.indexOf("import androidx.room.Entity")
-                        if (importPosition != -1) {
-                            val beforeImports = replacementCode.substring(0, importPosition)
-                            val afterImports = replacementCode.substring(importPosition)
-                            replacementCode = beforeImports + "$importForeignKey\n" + afterImports
-                        }
+                        file.setBinaryContent(code.toByteArray())
+                        openFileInEditor(project, file)
+                    } else {
+                        showNotification("Unable to create the file. It might already exist.")
                     }
-                    // Overwrite the file with new content
-                    selectedFile.writeText(replacementCode)
-                    showNotification("The selected ${inputDialog.getClassName2()} file has been successfully updated!")
-                } else {
-                    showNotification("Selected file does not exist.")
+                }
+            } else {
+                // A separate action for editing an existing file
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val selectedFile = File(pathFile)
+                    if (selectedFile.exists()) {
+                        var replacementCode = selectedFile.readText()
+
+                        val entityPattern = """@Entity\(tableName = "${inputDialog.getTableName2()}"\)""".toRegex()
+                        val newEntityAnnotation = entityRelation(inputDialog)
+
+                        replacementCode = replacementCode.replace(entityPattern, newEntityAnnotation)
+
+                        // Check if the ForeignKey import already exists, and add it if not
+                        val importForeignKey = "import androidx.room.ForeignKey"
+                        if (!replacementCode.contains(importForeignKey)) {
+                            // We add the import after other imports
+                            val importPosition = replacementCode.indexOf("import androidx.room.Entity")
+                            if (importPosition != -1) {
+                                val beforeImports = replacementCode.substring(0, importPosition)
+                                val afterImports = replacementCode.substring(importPosition)
+                                replacementCode = beforeImports + "$importForeignKey\n" + afterImports
+                            }
+                        }
+                        // Overwrite the file with new content
+                        selectedFile.writeText(replacementCode)
+                        showNotification("The selected ${inputDialog.getClassName2()} file has been successfully updated!")
+                    } else {
+                        showNotification("Selected file does not exist.")
+                    }
                 }
             }
+
         } catch (e: IOException) {
             e.printStackTrace()
             showNotification(e.message ?: "An error occurred.")
