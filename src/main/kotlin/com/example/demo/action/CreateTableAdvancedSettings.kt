@@ -1,9 +1,7 @@
 package com.example.demo.action
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.CreateTable
-import com.example.demo.input.Table
-import com.example.demo.tableConfig.TableCreate
+import com.example.demo.input.EntityAdvancedSettings
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -18,7 +16,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.IOException
 
-class CreateTable : AnAction() {
+class CreateTableAdvancedSettings : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (selectedFile != null) {
@@ -45,7 +43,7 @@ class CreateTable : AnAction() {
         packagePath: String,
         event: AnActionEvent
     ) {
-        val inputDialog = Table()
+        val inputDialog = EntityAdvancedSettings()
         if (inputDialog.showAndGet()) {
             var fileName = inputDialog.getTableName()
 
@@ -74,7 +72,7 @@ class CreateTable : AnAction() {
         directoryPath: String,
         packagePath: String,
         fileName: String,
-        inputDialog: Table,
+        inputDialog: EntityAdvancedSettings,
         event: AnActionEvent
     ) {
         try {
@@ -86,7 +84,7 @@ class CreateTable : AnAction() {
                 val file = directory?.createChildData(this, fileName)
 
                 // Write the contents of the file (you can also use templates to generate code)
-                val content = CreateTable().generate(
+                /*val content = CreateTable().generate(
                     TableCreate(
                         packagePath,
                         inputDialog.getTableName(),
@@ -98,7 +96,7 @@ class CreateTable : AnAction() {
 
                 event.project?.showNotification("The class is successfully created!")
                 // Open a new file in a tab
-                openFileInEditor(project, file!!)
+                openFileInEditor(project, file!!)*/
             }
 
 

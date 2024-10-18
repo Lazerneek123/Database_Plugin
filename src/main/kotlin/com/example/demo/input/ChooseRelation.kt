@@ -26,7 +26,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class InputDialogChooseRelation(
+class ChooseRelation(
     private val directoryPath: String, private val packagePath: String,
     private val project: Project
 ) : DialogWrapper(true) {
@@ -67,16 +67,16 @@ class InputDialogChooseRelation(
         val labelRelationIcon1 = JLabel(scaledIcon)
         labelRelationIcon1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "1:1")
-                inputDialogRelation.show()
+                val relation = Relation(directoryPath, packagePath, project, "1:1")
+                relation.show()
 
                 // Get the results when you click the OK button
-                if (inputDialogRelation.isOK) {
+                if (relation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            inputDialogRelation,
-                            inputDialogRelation.getPathFile2(),
+                            relation,
+                            relation.getPathFile2(),
                             "1:1"
                         )
                     }
@@ -94,16 +94,16 @@ class InputDialogChooseRelation(
         val labelRelationIcon2 = JLabel(scaledIcon)
         labelRelationIcon2.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "1:M")
-                inputDialogRelation.show()
+                val relation = Relation(directoryPath, packagePath, project, "1:M")
+                relation.show()
 
                 // Get the results when you click the OK button
-                if (inputDialogRelation.isOK) {
+                if (relation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            inputDialogRelation,
-                            inputDialogRelation.getPathFile2(),
+                            relation,
+                            relation.getPathFile2(),
                             "1:M"
                         )
                     }
@@ -121,16 +121,16 @@ class InputDialogChooseRelation(
         val labelRelationIcon3 = JLabel(scaledIcon)
         labelRelationIcon3.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val inputDialogRelation = InputDialogRelation(directoryPath, packagePath, project, "M:M")
-                inputDialogRelation.show()
+                val relation = Relation(directoryPath, packagePath, project, "M:M")
+                relation.show()
 
                 // Get the results when you click the OK button
-                if (inputDialogRelation.isOK) {
+                if (relation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            inputDialogRelation,
-                            inputDialogRelation.getPathFile2(),
+                            relation,
+                            relation.getPathFile2(),
                             "M:M"
                         )
                     }
@@ -155,13 +155,11 @@ class InputDialogChooseRelation(
     }
 
     private fun createKotlinFiles(
-        inputDialog: InputDialogRelation,
+        inputDialog: Relation,
         pathFile: String,
         relation: String
     ) {
         val directory = LocalFileSystem.getInstance().findFileByPath(this.directoryPath)
-
-
 
         try {
             // A separate action for creating a new file

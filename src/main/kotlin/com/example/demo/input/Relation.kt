@@ -10,7 +10,7 @@ import java.awt.BorderLayout
 import java.io.File
 import javax.swing.*
 
-class InputDialogRelation(
+class Relation(
     private var directoryPath: String,
     private val packagePath: String,
     private val project: Project,

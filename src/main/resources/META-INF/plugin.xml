@@ -43,6 +43,12 @@
                     icon="AllIcons.General.ProjectTab"
                     description="Create table">
             </action>
+            <action id="com.example.demo.action.CreateTableAdvancedSettings"
+                    class="com.example.demo.action.CreateTableAdvancedSettings"
+                    text="Advanced Table Creation Settings"
+                    icon="AllIcons.General.ProjectTab"
+                    description="Advanced table creation settings">
+            </action>
             <action id="com.example.demo.action.CreateRelations"
                     class="com.example.demo.action.CreateRelations"
                     text="Create Tables and Relations Between Them"

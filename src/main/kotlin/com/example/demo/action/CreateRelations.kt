@@ -1,6 +1,6 @@
 package com.example.demo.action
 
-import com.example.demo.input.InputDialogChooseRelation
+import com.example.demo.input.ChooseRelation
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -32,7 +32,7 @@ class CreateRelations : AnAction() {
         directoryPath: String,
         packagePath: String
     ) {
-        val inputDialog = InputDialogChooseRelation(directoryPath, packagePath, project)
+        val inputDialog = ChooseRelation(directoryPath, packagePath, project)
         inputDialog.show()
     }
 }

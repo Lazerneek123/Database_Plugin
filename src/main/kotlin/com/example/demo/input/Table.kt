@@ -6,19 +6,25 @@ import com.example.demo.model.PrimaryKey
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
+import java.awt.CardLayout
+import java.awt.event.ActionEvent
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class InputDialogEntity : DialogWrapper(true) {
-    private val panel = JPanel()
+class Table : DialogWrapper(true) {
+    private val cardLayout = CardLayout()
+    private val panelMain = JPanel(cardLayout)
 
-    private val nameLabel = JLabel("Table Name:")
+    private val nameLabel = JLabel("Name:")
     private val nameTableField = JTextField()
 
     private val primaryKeyLabel = JLabel("Primary Key")
+    private val columnLabel = JLabel("Columns")
+
+    private val attribute = com.example.demo.tableConfig.EntityAttribute().get()
 
     // Model for list
     private val listModelPrimaryKey = DefaultListModel<PrimaryKey>()
@@ -27,14 +33,92 @@ class InputDialogEntity : DialogWrapper(true) {
     private val listPrimaryKey = JList(listModelPrimaryKey)
 
     private val listModelColumn = DefaultListModel<Column>()
-
-    // Creating a list based on a model
     private val listColumn = JList(listModelColumn)
-    private val columnLabel = JLabel("Columns")
 
     init {
         title = "Create Table"
         init()
+
+        // Додаємо панелі для кроків
+        panelMain.add(createStep1Panel(), "Step 1")
+        panelMain.add(createStep2Panel(), "Step 2")
+
+
+    }
+
+    private fun createStep2Panel(): JPanel {
+        val panel = JPanel()
+        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+
+        val listModelEntityAttribute = DefaultListModel<Map.Entry<String, Any>>()
+        val listEntityAttribute = JList(listModelEntityAttribute)
+
+        val nameLabel = JLabel("Entity")
+        val panelLabel = JPanel()
+        panelLabel.layout = BoxLayout(panelLabel, BoxLayout.X_AXIS)
+        panelLabel.add(nameLabel)
+        panel.add(panelLabel, BorderLayout.CENTER)
+
+
+        var selectedElement = ""
+
+        attribute.forEach { attributeName -> listModelEntityAttribute.addElement(mapOf(attributeName to "").entries.first()) }
+
+        panel.add(Box.createVerticalStrut(5))
+        val panelPrimaryKey = JPanel()
+        panelPrimaryKey.layout = BoxLayout(panelPrimaryKey, BoxLayout.Y_AXIS)
+        panel.add(panelPrimaryKey)
+        panel.add(Box.createVerticalStrut(5))
+
+        // Add a change listener to the list model
+        listModelEntityAttribute.addListDataListener(object : ListDataListener {
+            override fun intervalAdded(e: ListDataEvent) {
+                checkConditions()
+            }
+
+            override fun intervalRemoved(e: ListDataEvent) {
+                checkConditions()
+            }
+
+            override fun contentsChanged(e: ListDataEvent) {
+                checkConditions()
+            }
+        })
+        listEntityAttribute.addListSelectionListener { event ->
+            if (!event.valueIsAdjusting) {
+                val element = listEntityAttribute.selectedValue
+                if (element != null) {
+                    selectedElement = element.key
+                    // Click your own InputDialog
+                    val entityAdvancedSettings = EntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn)
+                    entityAdvancedSettings.show()
+
+                    // Get the results when you click the OK button
+                    if (entityAdvancedSettings.isOK) {
+                        val pair = entityAdvancedSettings.getSelectedValue()
+                        listModelEntityAttribute.elements().toList().forEachIndexed { index, element ->
+                            if (element.key == pair.key) {
+                                val updatedElement = mapOf(element.key to pair.value).entries.first()
+                                listModelEntityAttribute.set(index, updatedElement)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Adding a list to a panel
+        panel.add(JScrollPane(listEntityAttribute), BorderLayout.CENTER)
+
+        // Adding buttons to a panel
+        val buttonPanel = JPanel()
+        panel.add(buttonPanel, BorderLayout.SOUTH)
+
+        return panel
+    }
+
+    private fun createStep1Panel(): JPanel {
+        val panel = JPanel()
 
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
 
@@ -58,12 +142,14 @@ class InputDialogEntity : DialogWrapper(true) {
         panel.add(primaryKeyPanel)
         panel.add(Box.createVerticalStrut(5))
 
-        panelCreatePrimaryKey()
-        isOKActionEnabled = false
-        panelCreateColumn()
+        panelCreatePrimaryKey(panel)
+        //isOKActionEnabled = false
+        panelCreateColumn(panel)
+
+        return panel
     }
 
-    private fun panelCreateColumn() {
+    private fun panelCreateColumn(panel: JPanel) {
         panel.add(Box.createVerticalStrut(5))
         val panelColumn = JPanel()
         panelColumn.layout = BoxLayout(panelColumn, BoxLayout.X_AXIS)
@@ -74,14 +160,13 @@ class InputDialogEntity : DialogWrapper(true) {
         // Add button
         val addBtnColumn = JButton("Add")
         addBtnColumn.addActionListener {
-
             // Click your own InputDialog
-            val inputDialogColumn = InputDialogColumn()
-            inputDialogColumn.show()
+            val column = Column()
+            column.show()
 
             // Get the results when you click the OK button
-            if (inputDialogColumn.isOK) {
-                val columnName = inputDialogColumn.getColumnName()
+            if (column.isOK) {
+                val columnName = column.getColumnName()
 
                 // Checking for a name match
                 if (listModelColumn.elements().toList()
@@ -94,9 +179,9 @@ class InputDialogEntity : DialogWrapper(true) {
                         "Error:"
                     )
                 } else {
-                    val dataType = inputDialogColumn.getColumnDataType()
-                    val value = inputDialogColumn.getColumnValue()
-                    val nullable = inputDialogColumn.getColumnNullable()
+                    val dataType = column.getColumnDataType()
+                    val value = column.getColumnValue()
+                    val nullable = column.getColumnNullable()
 
                     val newColumn = Column(columnName, dataType, value, nullable)
                     listModelColumn.addElement(newColumn)
@@ -138,7 +223,7 @@ class InputDialogEntity : DialogWrapper(true) {
         panel.add(buttonPanel, BorderLayout.SOUTH)
     }
 
-    private fun panelCreatePrimaryKey() {
+    private fun panelCreatePrimaryKey(panel: JPanel) {
         panel.add(Box.createVerticalStrut(5))
         val panelPrimaryKey = JPanel()
         panelPrimaryKey.layout = BoxLayout(panelPrimaryKey, BoxLayout.X_AXIS)
@@ -150,12 +235,12 @@ class InputDialogEntity : DialogWrapper(true) {
         val addBtnPrimaryKey = JButton("Add")
         addBtnPrimaryKey.addActionListener {
             // Click your own InputDialog
-            val inputDialogPrimaryKey = InputDialogPrimaryKey()
-            inputDialogPrimaryKey.show()
+            val primaryKey = PrimaryKey()
+            primaryKey.show()
 
             // Get the results when you click the OK button
-            if (inputDialogPrimaryKey.isOK) {
-                val columnName = inputDialogPrimaryKey.getPrimaryKeyName()
+            if (primaryKey.isOK) {
+                val columnName = primaryKey.getPrimaryKeyName()
 
                 // Checking for a name match
                 if (listModelPrimaryKey.elements().toList().any { it.name == columnName } ||
@@ -167,9 +252,9 @@ class InputDialogEntity : DialogWrapper(true) {
                         "Error:"
                     )
                 } else {
-                    val dataType = inputDialogPrimaryKey.getPrimaryKeyDataType()
-                    val value = inputDialogPrimaryKey.getPrimaryKeyValue()
-                    val autoGenerator = inputDialogPrimaryKey.getPrimaryKeyAutoGenerate()
+                    val dataType = primaryKey.getPrimaryKeyDataType()
+                    val value = primaryKey.getPrimaryKeyValue()
+                    val autoGenerator = primaryKey.getPrimaryKeyAutoGenerate()
 
                     val newPrimaryKey = PrimaryKey(columnName, dataType, autoGenerator, value)
                     listModelPrimaryKey.addElement(newPrimaryKey)
@@ -245,7 +330,7 @@ class InputDialogEntity : DialogWrapper(true) {
     }
 
     override fun createCenterPanel(): JComponent {
-        return panel
+        return panelMain
     }
 
     fun getTableName(): String {
@@ -258,5 +343,26 @@ class InputDialogEntity : DialogWrapper(true) {
 
     fun getColumnsData(): List<Column> {
         return listModelColumn.elements().toList()
+    }
+
+    override fun createActions(): Array<Action> {
+        return arrayOf(
+            object : DialogWrapperAction("Previous") {
+                override fun doAction(e: ActionEvent?) {
+                    cardLayout.previous(panelMain)
+                }
+            },
+            object : DialogWrapperAction("Next") {
+                override fun doAction(e: ActionEvent?) {
+                    cardLayout.next(panelMain)
+                }
+            },
+            cancelAction,
+            object : DialogWrapperAction("Finish") {
+                override fun doAction(e: ActionEvent?) {
+                    close(OK_EXIT_CODE)
+                }
+            }
+        )
     }
 }
