@@ -1,4 +1,4 @@
-package com.example.demo.input
+package com.example.demo.inputDialog
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.*
@@ -67,7 +67,7 @@ class ChooseRelation(
         val labelRelationIcon1 = JLabel(scaledIcon)
         labelRelationIcon1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, project, "1:1")
+                val relation = Relation(directoryPath, packagePath, "1:1")
                 relation.show()
 
                 // Get the results when you click the OK button
@@ -94,7 +94,7 @@ class ChooseRelation(
         val labelRelationIcon2 = JLabel(scaledIcon)
         labelRelationIcon2.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, project, "1:M")
+                val relation = Relation(directoryPath, packagePath, "1:M")
                 relation.show()
 
                 // Get the results when you click the OK button
@@ -121,7 +121,7 @@ class ChooseRelation(
         val labelRelationIcon3 = JLabel(scaledIcon)
         labelRelationIcon3.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, project, "M:M")
+                val relation = Relation(directoryPath, packagePath, "M:M")
                 relation.show()
 
                 // Get the results when you click the OK button

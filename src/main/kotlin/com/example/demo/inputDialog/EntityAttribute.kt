@@ -1,9 +1,8 @@
-package com.example.demo.input
+package com.example.demo.inputDialog
 
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 import com.example.demo.tableConfig.EntityAttribute
-import com.example.demo.tableConfig.ForeignKeyAttribute
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.CardLayout
@@ -16,18 +15,20 @@ import javax.swing.event.ListDataListener
 class EntityAttribute(
     selectedElement: String,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
-    listModelColumn: DefaultListModel<Column>
+    listModelColumn: DefaultListModel<Column>,
+    directoryPath: String
 ) : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val panelMain = JPanel(CardLayout())
 
     private val attributeEntity = EntityAttribute().get()
-    private val attributeForeignKey = ForeignKeyAttribute().get()
+
+    private val initialValues = DefaultListModel<Map.Entry<String?, Any?>?>()
 
     private var currentCardName: String = selectedElement
 
-    // Панель для JTextField (TableName)
+    // Panel for JTextField (TableName)
     private val tableNameField = JTextField(20)
     private val tableNamePanel = JPanel().apply {
         add(JLabel("Value:"))
@@ -78,30 +79,82 @@ class EntityAttribute(
     }
 
     // Панель для ForeignKeys
-    private val foreignKeyListModel = DefaultListModel<Map.Entry<String, Any>>()
+    private val foreignKeyListModel = DefaultListModel<com.example.demo.model.ForeignKey>()
     private val foreignKeyList = JList(foreignKeyListModel)
     private val foreignKeysPanel = JPanel().apply {
+        val addBtnColumn = JButton("Add")
+        addBtnColumn.addActionListener {
+            val inputDialogIndex = ForeignKey(listModelPrimaryKey, listModelColumn, directoryPath)
+            inputDialogIndex.show()
+
+            // Get the results when you click the OK button
+            if (inputDialogIndex.isOK) {
+                val foreignKeyElement = inputDialogIndex.getForeignKey()
+                foreignKeyListModel.addElement(foreignKeyElement)
+                if (!foreignKeyListModel.isEmpty) {
+                    isOKActionEnabled = true
+                }
+            }
+        }
+
+        val removeBtnColumn = JButton("Delete")
+        removeBtnColumn.addActionListener {
+            val selectedIndex = foreignKeyList.selectedIndex
+            if (selectedIndex != -1) {
+                foreignKeyListModel.removeElementAt(selectedIndex)
+            }
+        }
+
+        // Adding a list to a panel
+        add(JScrollPane(foreignKeyList), BorderLayout.CENTER)
+
+        // Adding buttons to a panel
+        val buttonPanel = JPanel()
+        buttonPanel.add(addBtnColumn)
+        buttonPanel.add(removeBtnColumn)
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(buttonPanel, BorderLayout.SOUTH)
+    }
 
-        val nameLabel = JLabel("Foreign Key")
-        val panelLabel = JPanel()
-        panelLabel.layout = BoxLayout(panelLabel, BoxLayout.X_AXIS)
-        panelLabel.add(nameLabel)
-        add(panelLabel, BorderLayout.CENTER)
+    private fun checkConditions() {
+        // Condition check
+        val conditionsMet: Boolean = false
 
+        // Activate or deactivate the OK button
+        isOKActionEnabled = conditionsMet
+    }
 
-        var selectedElement = ""
+    // Панель для Indices
+    private val indexListModel = DefaultListModel<com.example.demo.model.Index>()
+    private val indexList = JList(indexListModel)
+    private val indicesPanel = JPanel().apply {
+        // Add button
+        val addBtnColumn = JButton("Add")
+        addBtnColumn.addActionListener {
+            val inputDialogIndex = Index(listModelPrimaryKey, listModelColumn)
+            inputDialogIndex.show()
 
-        attributeForeignKey.forEach { attributeName -> foreignKeyListModel.addElement(mapOf(attributeName to "").entries.first()) }
+            // Get the results when you click the OK button
+            if (inputDialogIndex.isOK) {
+                val indexElement = inputDialogIndex.getIndex()
+                indexListModel.addElement(indexElement)
+                if (!indexListModel.isEmpty) {
+                    isOKActionEnabled = true
+                }
+            }
+        }
 
-        add(Box.createVerticalStrut(5))
-        val panelPrimaryKey = JPanel()
-        panelPrimaryKey.layout = BoxLayout(panelPrimaryKey, BoxLayout.Y_AXIS)
-        add(panelPrimaryKey)
-        add(Box.createVerticalStrut(5))
+        // Delete button
+        val removeBtnColumn = JButton("Delete")
+        removeBtnColumn.addActionListener {
+            val selectedIndex = indexList.selectedIndex
+            if (selectedIndex != -1) {
+                indexListModel.removeElementAt(selectedIndex)
+            }
+        }
 
         // Add a change listener to the list model
-        foreignKeyListModel.addListDataListener(object : ListDataListener {
+        listModelColumn.addListDataListener(object : ListDataListener {
             override fun intervalAdded(e: ListDataEvent) {
                 checkConditions()
             }
@@ -114,43 +167,16 @@ class EntityAttribute(
                 checkConditions()
             }
         })
-        foreignKeyList.addListSelectionListener { event ->
-            if (!event.valueIsAdjusting) {
-                val element = foreignKeyList.selectedValue
-                if (element != null) {
-                    selectedElement = element.key
-                    // Click your own InputDialog
-                    val entityAdvancedSettings = EntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn)
-                    entityAdvancedSettings.show()
 
-                    // Get the results when you click the OK button
-                    if (entityAdvancedSettings.isOK) {
-                        val pair = entityAdvancedSettings.getSelectedValue()
-                        foreignKeyListModel.elements().toList().forEachIndexed { index, element ->
-                            if (element.key == pair.key) {
-                                val updatedElement = mapOf(element.key to pair.value).entries.first()
-                                foreignKeyListModel.set(index, updatedElement)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // Adding a list to a panel
+        add(JScrollPane(indexList), BorderLayout.CENTER)
 
-        add(JScrollPane(foreignKeyList), BorderLayout.CENTER)
-    }
-
-    private fun checkConditions() {
-        // Condition check
-        val conditionsMet: Boolean = false
-
-        // Activate or deactivate the OK button
-        isOKActionEnabled = conditionsMet
-    }
-
-    // Панель для Indices
-    private val indicesPanel = JPanel().apply {
-        add(JLabel("Indices Configuration"))
+        // Adding buttons to a panel
+        val buttonPanel = JPanel()
+        buttonPanel.add(addBtnColumn)
+        buttonPanel.add(removeBtnColumn)
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(buttonPanel, BorderLayout.SOUTH)
     }
 
     // Панель для InheritSuperIndices
@@ -193,10 +219,16 @@ class EntityAttribute(
 
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
 
+        initialValues.addElement(mapOf(attributeEntity[0] to currentCardName).entries.first())
+        initialValues.addElement(mapOf(attributeEntity[1] to null).entries.first())
+        initialValues.addElement(mapOf(attributeEntity[2] to null).entries.first())
+        initialValues.addElement(mapOf(attributeEntity[3] to null).entries.first())
+        initialValues.addElement(mapOf(attributeEntity[4] to null).entries.first())
+        initialValues.addElement(mapOf(attributeEntity[5] to null).entries.first())
+
         val nameColumnPanel = JPanel()
         nameColumnPanel.layout = BoxLayout(nameColumnPanel, BoxLayout.X_AXIS)
 
-        //checkTextFieldToLatinCharactersOnly()
         panel.add(nameColumnPanel)
 
         val comboBoxPanel = JPanel()
@@ -226,20 +258,23 @@ class EntityAttribute(
 
         panel.add(mainPanel)
 
-        //updateValueField()
         panel.add(valuePanel)
+    }
+    // A function to check if the values in the model have changed
+    fun getInitialValues(): DefaultListModel<Map.Entry<String?, Any?>?> {
+        return initialValues
     }
 
     override fun createCenterPanel(): JComponent {
         return panel
     }
 
-    fun getSelectedValue(): Map.Entry<String, Any> {
+    fun getSelectedValue(): Map.Entry<String, Any?> {
         return when (currentCardName) {
             attributeEntity[0] -> mapOf(currentCardName to tableNameField.text).entries.first()
             attributeEntity[1] -> mapOf(currentCardName to primaryKeyList.selectedValuesList).entries.first()
-            attributeEntity[2] -> mapOf(currentCardName to primaryKeyListModel.elements().toList()).entries.first()
-            attributeEntity[3] -> mapOf(currentCardName to primaryKeyListModel.elements().toList()).entries.first()
+            attributeEntity[2] -> mapOf(currentCardName to foreignKeyListModel.elements().toList()).entries.first()
+            attributeEntity[3] -> mapOf(currentCardName to indexListModel.elements().toList()).entries.first()
             attributeEntity[4] -> mapOf(currentCardName to comboBoxInheritSuperIndices.selectedItem!!).entries.first()
             attributeEntity[5] -> mapOf(currentCardName to ignoredColumnsList.selectedValuesList).entries.first()
             else -> mapOf("key" to "value").entries.first()

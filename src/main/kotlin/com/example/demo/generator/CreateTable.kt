@@ -14,11 +14,10 @@ class CreateTable {
         code = """
                 package ${config.getPath()}
 
-                import androidx.room.ColumnInfo
                 import androidx.room.Entity
                 import androidx.room.PrimaryKey
 
-                @Entity(tableName = "${config.getTableName()}")
+                @Entity
                 data class ${CapitalizeFirstLetter().uppercaseChar(config.getTableName())}(
                 ${generateColumns(config.getListColumnData())}
                 ) {
@@ -43,9 +42,8 @@ class CreateTable {
             val dataType = list[i].dataType
             val value = list[i].value
 
-            val cont = """    
+            val cont = """
                     @PrimaryKey(autoGenerate = $autoGenerate)
-                    @ColumnInfo(name = "$name")
                     var $name: $dataType = $value"""
             content += cont
         }
@@ -62,7 +60,7 @@ class CreateTable {
                 """
             }
             val nullable = list[i].nullable
-            val cont = """    @ColumnInfo(name = "${list[i].name}")
+            val cont = """
                     val ${list[i].name}: ${list[i].dataType}${columnQuestionMark(nullable)} = ${list[i].value}"""
             content += cont
 

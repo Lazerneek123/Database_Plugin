@@ -1,4 +1,4 @@
-package com.example.demo.input
+package com.example.demo.inputDialog
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.intellij.icons.AllIcons
@@ -13,9 +13,8 @@ import javax.swing.*
 class Relation(
     private var directoryPath: String,
     private val packagePath: String,
-    private val project: Project,
     relation: String
-    ) :
+) :
     DialogWrapper(true) {
     private val panel = JPanel()
 
@@ -112,16 +111,10 @@ class Relation(
         val packagePath: String
         val className: String
 
-
-
-
-        //variables.add("variableName" to "Int")
-
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFile = fileChooser.selectedFile // Get the selected file
             pathFile = selectedFile.path
             //label.text = "Selected File: ${selectedFile.absolutePath}"
-
 
 
             val variablePattern = """var (\w+): (\w+)""".toRegex()
@@ -131,7 +124,6 @@ class Relation(
                 val variableType = match.groupValues[2]
                 variables.add(variableName to variableType)
             }
-
 
 
             val code = selectedFile.readText().trimIndent()
@@ -211,7 +203,9 @@ class Relation(
     }
 
     fun getCrossRefName(): String {
-        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + CapitalizeFirstLetter().uppercaseChar(tableData2.tableName) + "CrossRef"
+        return CapitalizeFirstLetter().uppercaseChar(tableData1.tableName) + CapitalizeFirstLetter().uppercaseChar(
+            tableData2.tableName
+        ) + "CrossRef"
     }
 
     fun getTablePackagePath1(): String {

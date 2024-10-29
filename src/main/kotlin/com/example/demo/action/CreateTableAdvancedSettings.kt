@@ -1,7 +1,7 @@
 package com.example.demo.action
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.input.EntityAdvancedSettings
+import com.example.demo.inputDialog.EntityAdvancedSettings
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction

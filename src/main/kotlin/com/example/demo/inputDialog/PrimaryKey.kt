@@ -1,32 +1,28 @@
-package com.example.demo.input
+package com.example.demo.inputDialog
 
 import com.example.demo.element.TextFieldRegex
-import com.example.demo.element.TextFieldValueColumn
+import com.example.demo.element.TextFieldValuePrimaryKey
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.event.ItemEvent
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class Column : DialogWrapper(true) {
+class PrimaryKey : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val nameLabel = JLabel("Name:")
     private val nameField = JTextField()
 
     private val valueLabel = JLabel("Value:")
-    private val valueField = TextFieldValueColumn()
+    private val valueField = TextFieldValuePrimaryKey()
     private val typeLabel = JLabel("Type:")
-    private val comboBoxBoolean = JComboBox(arrayOf("true", "false"))
 
     // Creating options for a drop-down list
     private val dataTypes = arrayOf(
         "String",
         "Int",
-        "Double",
         "Long",
-        "Boolean",
-        "Float",
         "Byte"
     )
 
@@ -34,10 +30,9 @@ class Column : DialogWrapper(true) {
     private val comboBoxDateType = JComboBox(dataTypes)
 
     private val valueAutoGenerateCheckBox = JCheckBox("Auto Generate")
-    private val nullableCheckBox = JCheckBox("Nullable")
 
     init {
-        title = "Create Column"
+        title = "Create Primary Key"
         init()
 
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
@@ -72,13 +67,10 @@ class Column : DialogWrapper(true) {
         comboBoxDateType.addActionListener {
             val selectedItem = comboBoxDateType.selectedItem
             if (selectedItem as? String == "Boolean") {
-                comboBoxBoolean.isEnabled = !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected
-                comboBoxBoolean.isVisible = true
                 valueField.isVisible = false
             } else {
                 // To clear the data in the value term
                 valueField.setSelectedItem(selectedItem as? String)
-                comboBoxBoolean.isVisible = false
                 valueField.isVisible = true
                 updateValueField()
             }
@@ -95,54 +87,24 @@ class Column : DialogWrapper(true) {
         valuePanel.add(valueLabel)
         valuePanel.add(valueField)
 
-        comboBoxBoolean.isVisible = false
-        valuePanel.add(comboBoxBoolean)
-        comboBoxBoolean.addActionListener {
-            checkConditions()
-        }
-
         val valueAutoPanel = JPanel()
         valueAutoPanel.layout = BoxLayout(valueAutoPanel, BoxLayout.Y_AXIS)
 
-        valueAutoGenerateCheckBox.isSelected = false
+        valueAutoGenerateCheckBox.isSelected = true
         valueField.isEnabled = false
         // We add an event listener for the checkBox
         valueAutoGenerateCheckBox.addItemListener { e ->
             if (e.stateChange == ItemEvent.SELECTED) {
-                nullableCheckBox.isSelected = false
+                // If the checkBox is checked, set isActionEnabled to true
+                valueField.isEnabled = false
+            } else if (e.stateChange == ItemEvent.DESELECTED) {
+                // If the checkBox is not checked, set isActionEnabled to false
+                valueField.isEnabled = true
             }
-            // If the checkBox is checked, set isActionEnabled to true
-            comboBoxBoolean.isEnabled =
-                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-            comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-            valueField.isEnabled =
-                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem != "Boolean"
-            valueField.isVisible = comboBoxDateType.selectedItem != "Boolean"
-
             checkConditions()
         }
         valueAutoPanel.add(valueAutoGenerateCheckBox)
 
-
-        nullableCheckBox.isSelected = true
-        // We add an event listener for the checkBox
-        nullableCheckBox.addItemListener { e ->
-            if (e.stateChange == ItemEvent.SELECTED) {
-                valueAutoGenerateCheckBox.isSelected = false
-            }
-            // If the checkBox is checked, set isActionEnabled to true
-            comboBoxBoolean.isEnabled =
-                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem == "Boolean"
-            comboBoxBoolean.isVisible = comboBoxDateType.selectedItem == "Boolean"
-
-            valueField.isEnabled =
-                !valueAutoGenerateCheckBox.isSelected && !nullableCheckBox.isSelected && comboBoxDateType.selectedItem != "Boolean"
-            valueField.isVisible = comboBoxDateType.selectedItem != "Boolean"
-
-            checkConditions()
-        }
-
-        valueAutoPanel.add(nullableCheckBox)
         valuePanel.add(valueAutoPanel)
 
         isOKActionEnabled = false
@@ -156,7 +118,7 @@ class Column : DialogWrapper(true) {
 
         // Condition check
         val conditionsMet: Boolean =
-            if (valueAutoGenerateCheckBox.isSelected || nullableCheckBox.isSelected || comboBoxBoolean.isEnabled || !valueField.isEnabled) {
+            if (valueAutoGenerateCheckBox.isSelected || !valueField.isEnabled) {
                 name.isNotEmpty()
             } else {
                 name.isNotEmpty() && value.isNotEmpty()
@@ -191,44 +153,33 @@ class Column : DialogWrapper(true) {
         return panel
     }
 
-    fun getColumnName(): String {
+    fun getPrimaryKeyName(): String {
         return nameField.text
     }
 
-    fun getColumnDataType(): String {
+    fun getPrimaryKeyDataType(): String {
         return comboBoxDateType.selectedItem as String
     }
 
-    fun getColumnNullable(): Boolean {
-        return nullableCheckBox.isSelected
+    fun getPrimaryKeyValue(): String {
+        if (valueAutoGenerateCheckBox.isSelected) {
+            return autoGenerateValue()
+        } else {
+            if (comboBoxDateType.selectedItem as String == "String") {
+                return '"' + valueField.text + '"'
+            }
+            return valueField.text
+        }
     }
 
-    fun getColumnValue(): String {
-        if (!nullableCheckBox.isSelected) {
-            if (comboBoxBoolean.isVisible) {
-                return comboBoxBoolean.selectedItem as String
-            } else {
-                if (valueAutoGenerateCheckBox.isSelected) {
-                    return autoGenerateValue()
-                } else {
-                    if (comboBoxDateType.selectedItem as String == "String") {
-                        return '"' + valueField.text + '"'
-                    }
-                    return valueField.text
-                }
-            }
-        } else {
-            return "null"
-        }
+    fun getPrimaryKeyAutoGenerate(): Boolean {
+        return valueAutoGenerateCheckBox.isSelected
     }
 
     private fun autoGenerateValue(): String {
         return when (comboBoxDateType.selectedItem) {
             "String" -> """"""""
             "Int", "Long", "Byte" -> "0"
-            "Double" -> "0.0"
-            "Boolean" -> "true"
-            "Float" -> "0.0f"
             // Other options to choose from
             else -> ""
         }

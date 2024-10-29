@@ -1,8 +1,8 @@
 package com.example.demo.action
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.CreateTable
-import com.example.demo.input.Table
+import com.example.demo.generator.CreateTableAdvancedSettings
+import com.example.demo.inputDialog.Table
 import com.example.demo.tableConfig.TableCreate
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -45,20 +45,34 @@ class CreateTable : AnAction() {
         packagePath: String,
         event: AnActionEvent
     ) {
-        val inputDialog = Table()
+        val inputDialog = Table(directoryPath, event)
         if (inputDialog.showAndGet()) {
-            var fileName = inputDialog.getTableName()
+            var fileName = inputDialog.getName()
 
             if (fileName.isNotEmpty()) {
                 // Create a new file with the entered name and extension .kt
                 val name = "${CapitalizeFirstLetter().uppercaseChar(fileName)}.kt"
                 // Use runWriteAction to access the file system within a write-action
                 ApplicationManager.getApplication().runWriteAction {
-                    createKotlinFile(project, directoryPath, packagePath, name, inputDialog, event)
+                    createKotlinFile(
+                        project,
+                        directoryPath,
+                        packagePath,
+                        name,
+                        inputDialog,
+                        event
+                    )
                 }
             } else {
                 fileName = "NewDatabaseKotlinFile.kt"
-                createKotlinFile(project, directoryPath, packagePath, fileName, inputDialog, event)
+                createKotlinFile(
+                    project,
+                    directoryPath,
+                    packagePath,
+                    fileName,
+                    inputDialog,
+                    event
+                )
             }
         }
     }
@@ -86,17 +100,53 @@ class CreateTable : AnAction() {
                 val file = directory?.createChildData(this, fileName)
 
                 // Write the contents of the file (you can also use templates to generate code)
-                val content = CreateTable().generate(
+                val content: Any
+                /*if (inputDialog.isColumnInfo()) {
+                    content = CreateTableAdvancedSettings(
+                        inputDialog.getListModelEntityAttribute(),
+                        inputDialog.isEntity(),
+                        inputDialog.isColumnInfo()
+                    ).generate(
+                        TableCreate(
+                            packagePath,
+                            inputDialog.getTableName(),
+                            inputDialog.getPrimaryKeysData(),
+                            inputDialog.getColumnsData()
+                        ),
+                        inputDialog.getListModelColumnsAttribute()
+                    )
+                }
+                else{
+                    content = CreateTable().generate(
+                        TableCreate(
+                            packagePath,
+                            inputDialog.getTableName(),
+                            inputDialog.getPrimaryKeysData(),
+                            inputDialog.getColumnsData()
+                        )
+                    )
+                }*/
+
+                content = CreateTableAdvancedSettings(
+                    inputDialog.getListModelEntityAttribute(),
+                    inputDialog.isEntity(),
+                    inputDialog.isColumnInfo()
+                ).generate(
                     TableCreate(
                         packagePath,
-                        inputDialog.getTableName(),
+                        inputDialog.getName(),
                         inputDialog.getPrimaryKeysData(),
                         inputDialog.getColumnsData()
-                    )
+                    ),
+                    inputDialog.getListModelColumnsAttribute()
                 )
+
+                event.project?.showNotification(inputDialog.str)
+
+
                 file?.setBinaryContent(content.toByteArray())
 
-                event.project?.showNotification("The class is successfully created!")
+                event.project?.showNotification("The class ${inputDialog.getName()} is successfully created!")
                 // Open a new file in a tab
                 openFileInEditor(project, file!!)
             }
