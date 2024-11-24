@@ -2,7 +2,6 @@ package com.example.demo.inputDialog
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.util.IconUtil
@@ -10,7 +9,7 @@ import java.awt.BorderLayout
 import java.io.File
 import javax.swing.*
 
-class Relation(
+class InputDRelation(
     private var directoryPath: String,
     private val packagePath: String,
     relation: String

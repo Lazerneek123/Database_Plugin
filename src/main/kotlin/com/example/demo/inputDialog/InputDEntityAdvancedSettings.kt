@@ -11,7 +11,7 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class EntityAdvancedSettings : DialogWrapper(true) {
+class InputDEntityAdvancedSettings : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val nameClassLabel = JLabel("Class Name:")
@@ -205,12 +205,12 @@ class EntityAdvancedSettings : DialogWrapper(true) {
         addBtnColumn.addActionListener {
 
             // Click your own InputDialog
-            val column = Column()
-            column.show()
+            val inputDColumn = InputDColumn()
+            inputDColumn.show()
 
             // Get the results when you click the OK button
-            if (column.isOK) {
-                val columnName = column.getColumnName()
+            if (inputDColumn.isOK) {
+                val columnName = inputDColumn.getColumnName()
 
                 // Checking for a name match
                 if (listModelColumn.elements().toList()
@@ -221,9 +221,9 @@ class EntityAdvancedSettings : DialogWrapper(true) {
                         "Error:"
                     )
                 } else {
-                    val dataType = column.getColumnDataType()
-                    val value = column.getColumnValue()
-                    val nullable = column.getColumnNullable()
+                    val dataType = inputDColumn.getColumnDataType()
+                    val value = inputDColumn.getColumnValue()
+                    val nullable = inputDColumn.getColumnNullable()
 
                     val newColumn = Column(columnName, dataType, value, nullable)
                     listModelColumn.addElement(newColumn)

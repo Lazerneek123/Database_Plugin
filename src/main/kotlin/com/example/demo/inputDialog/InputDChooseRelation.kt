@@ -26,7 +26,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class ChooseRelation(
+class InputDChooseRelation(
     private val directoryPath: String, private val packagePath: String,
     private val project: Project
 ) : DialogWrapper(true) {
@@ -67,16 +67,16 @@ class ChooseRelation(
         val labelRelationIcon1 = JLabel(scaledIcon)
         labelRelationIcon1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, "1:1")
-                relation.show()
+                val inputDRelation = InputDRelation(directoryPath, packagePath, "1:1")
+                inputDRelation.show()
 
                 // Get the results when you click the OK button
-                if (relation.isOK) {
+                if (inputDRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            relation,
-                            relation.getPathFile2(),
+                            inputDRelation,
+                            inputDRelation.getPathFile2(),
                             "1:1"
                         )
                     }
@@ -94,16 +94,16 @@ class ChooseRelation(
         val labelRelationIcon2 = JLabel(scaledIcon)
         labelRelationIcon2.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, "1:M")
-                relation.show()
+                val inputDRelation = InputDRelation(directoryPath, packagePath, "1:M")
+                inputDRelation.show()
 
                 // Get the results when you click the OK button
-                if (relation.isOK) {
+                if (inputDRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            relation,
-                            relation.getPathFile2(),
+                            inputDRelation,
+                            inputDRelation.getPathFile2(),
                             "1:M"
                         )
                     }
@@ -121,16 +121,16 @@ class ChooseRelation(
         val labelRelationIcon3 = JLabel(scaledIcon)
         labelRelationIcon3.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val relation = Relation(directoryPath, packagePath, "M:M")
-                relation.show()
+                val inputDRelation = InputDRelation(directoryPath, packagePath, "M:M")
+                inputDRelation.show()
 
                 // Get the results when you click the OK button
-                if (relation.isOK) {
+                if (inputDRelation.isOK) {
                     // Use runWriteAction to access the file system within a write-action
                     ApplicationManager.getApplication().runWriteAction {
                         createKotlinFiles(
-                            relation,
-                            relation.getPathFile2(),
+                            inputDRelation,
+                            inputDRelation.getPathFile2(),
                             "M:M"
                         )
                     }
@@ -155,7 +155,7 @@ class ChooseRelation(
     }
 
     private fun createKotlinFiles(
-        inputDialog: Relation,
+        inputDialog: InputDRelation,
         pathFile: String,
         relation: String
     ) {
@@ -174,8 +174,8 @@ class ChooseRelation(
                 if (file != null) {
                     var code = ""
                     if (relation == "1:1") {
-                        val createRelationOneToOne = CreateRelationOneToOne()
-                        code = createRelationOneToOne.generate(
+                        val genCreateRelationOneToOne = GenCreateRelationOneToOne()
+                        code = genCreateRelationOneToOne.generate(
                             packagePath,
                             inputDialog.getTablePackagePath1(),
                             inputDialog.getTablePackagePath2(),
@@ -186,12 +186,12 @@ class ChooseRelation(
                             inputDialog.getParentColumn(),
                             inputDialog.getEntityColumn()
                         )
-                        showNotification("The class ${createRelationOneToOne.getNameClass()} is successfully created!")
+                        showNotification("The class ${genCreateRelationOneToOne.getNameClass()} is successfully created!")
                     }
 
                     if (relation == "1:M") {
-                        val createRelationOneToMany = CreateRelationOneToMany()
-                        code = createRelationOneToMany.generate(
+                        val genCreateRelationOneToMany = GenCreateRelationOneToMany()
+                        code = genCreateRelationOneToMany.generate(
                             packagePath,
                             inputDialog.getTablePackagePath1(),
                             inputDialog.getTablePackagePath2(),
@@ -202,11 +202,11 @@ class ChooseRelation(
                             inputDialog.getParentColumn(),
                             inputDialog.getEntityColumn()
                         )
-                        showNotification("The class ${createRelationOneToMany.getNameClass()} is successfully created!")
+                        showNotification("The class ${genCreateRelationOneToMany.getNameClass()} is successfully created!")
                     }
 
                     if (relation == "M:M") {
-                        val createCrossRef = CreateCrossRef()
+                        val genCreateCrossRef = GenCreateCrossRef()
 
 
                         var parentColumnName = ""
@@ -229,7 +229,7 @@ class ChooseRelation(
                         }
 
 
-                        code = createCrossRef.generate(
+                        code = genCreateCrossRef.generate(
                             packagePath,
                             inputDialog.getCrossRefName(),
                             inputDialog.getParentColumn(),
@@ -255,8 +255,8 @@ class ChooseRelation(
                     val file = directory?.createChildData(this, name)
 
                     if (file != null) {
-                        val createRelationManyToMany = CreateRelationManyToMany()
-                        val code = createRelationManyToMany.generate(
+                        val genCreateRelationManyToMany = GenCreateRelationManyToMany()
+                        val code = genCreateRelationManyToMany.generate(
                             packagePath,
                             inputDialog.getTablePackagePath1(),
                             inputDialog.getTablePackagePath2(),
@@ -267,7 +267,7 @@ class ChooseRelation(
                             inputDialog.getParentColumn(),
                             inputDialog.getEntityColumn()
                         )
-                        showNotification("The class ${createRelationManyToMany.getNameClass()} is successfully created!")
+                        showNotification("The class ${genCreateRelationManyToMany.getNameClass()} is successfully created!")
 
                         file.setBinaryContent(code.toByteArray())
                         openFileInEditor(project, file)

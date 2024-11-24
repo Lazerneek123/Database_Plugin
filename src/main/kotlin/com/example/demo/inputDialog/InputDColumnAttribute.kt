@@ -7,7 +7,7 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class ColumnAttribute(
+class InputDColumnAttribute(
     selectedElement: String
 ) : DialogWrapper(true) {
     private val panel = JPanel()

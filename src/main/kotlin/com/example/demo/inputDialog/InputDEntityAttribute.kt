@@ -12,7 +12,7 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class EntityAttribute(
+class InputDEntityAttribute(
     selectedElement: String,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>,
@@ -84,7 +84,7 @@ class EntityAttribute(
     private val foreignKeysPanel = JPanel().apply {
         val addBtnColumn = JButton("Add")
         addBtnColumn.addActionListener {
-            val inputDialogIndex = ForeignKey(listModelPrimaryKey, listModelColumn, directoryPath)
+            val inputDialogIndex = InputDForeignKey(listModelPrimaryKey, listModelColumn, directoryPath)
             inputDialogIndex.show()
 
             // Get the results when you click the OK button
@@ -131,12 +131,12 @@ class EntityAttribute(
         // Add button
         val addBtnColumn = JButton("Add")
         addBtnColumn.addActionListener {
-            val inputDialogIndex = Index(listModelPrimaryKey, listModelColumn)
-            inputDialogIndex.show()
+            val inputDialogInputDIndex = InputDIndex(listModelPrimaryKey, listModelColumn)
+            inputDialogInputDIndex.show()
 
             // Get the results when you click the OK button
-            if (inputDialogIndex.isOK) {
-                val indexElement = inputDialogIndex.getIndex()
+            if (inputDialogInputDIndex.isOK) {
+                val indexElement = inputDialogInputDIndex.getIndex()
                 indexListModel.addElement(indexElement)
                 if (!indexListModel.isEmpty) {
                     isOKActionEnabled = true

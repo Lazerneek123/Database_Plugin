@@ -2,7 +2,7 @@ package com.example.demo.generator
 
 import com.example.demo.element.CapitalizeFirstLetter
 
-class CreateRelationOneToMany {
+class GenCreateRelationOneToMany {
     private lateinit var code: String
     private lateinit var nameClass: String
 

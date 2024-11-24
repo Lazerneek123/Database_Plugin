@@ -3,7 +3,7 @@ package com.example.demo.generator
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.model.PrimaryKey
 
-class CreateTableRelation {
+class GenCreateTableRelation {
     private var code = ""
 
     fun generate(

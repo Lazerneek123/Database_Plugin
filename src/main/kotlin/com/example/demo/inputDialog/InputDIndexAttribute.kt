@@ -2,16 +2,14 @@ package com.example.demo.inputDialog
 
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
-import com.example.demo.tableConfig.ForeignKeyAttribute
 import com.example.demo.tableConfig.IndexAttribute
 import com.intellij.openapi.ui.DialogWrapper
-import java.awt.BorderLayout
 import java.awt.CardLayout
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class IndexAttribute(
+class InputDIndexAttribute(
     private val countValue: Int,
     selectedElement: String,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,

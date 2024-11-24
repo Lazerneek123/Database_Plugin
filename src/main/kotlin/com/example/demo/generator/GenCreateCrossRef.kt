@@ -1,6 +1,6 @@
 package com.example.demo.generator
 
-class CreateCrossRef {
+class GenCreateCrossRef {
     private lateinit var code: String
     private lateinit var nameClass: String
 

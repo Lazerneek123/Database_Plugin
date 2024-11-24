@@ -10,7 +10,7 @@ import javax.swing.*
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class ForeignKey(
+class InputDForeignKey(
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>,
     directoryPath: String
@@ -66,7 +66,7 @@ class ForeignKey(
                 if (element != null) {
                     selectedElement = element.key!!
                     val inputDialog =
-                        ForeignKeyAttribute(selectedElement, parentColumnsList, listModelPrimaryKey, listModelColumn, directoryPath)
+                        InputDForeignKeyAttribute(selectedElement, parentColumnsList, listModelPrimaryKey, listModelColumn, directoryPath)
                     inputDialog.show()
 
                     // Get the results when you click the OK button

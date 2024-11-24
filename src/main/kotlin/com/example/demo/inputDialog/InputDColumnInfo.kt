@@ -1,14 +1,12 @@
 package com.example.demo.inputDialog
 
 import com.example.demo.model.ColumnAdvancedSettings
-import com.example.demo.model.ForeignKey
 import com.example.demo.tableConfig.ColumnAttribute
 import com.intellij.openapi.ui.DialogWrapper
-import org.jetbrains.kotlin.backend.common.descriptors.synthesizedName
 import java.awt.BorderLayout
 import javax.swing.*
 
-class ColumnInfo(private val selectedElement: ColumnAdvancedSettings) : DialogWrapper(true) {
+class InputDColumnInfo(private val selectedElement: ColumnAdvancedSettings) : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val columnAttributeListModel = DefaultListModel<Map.Entry<String?, String?>>()
@@ -41,7 +39,7 @@ class ColumnInfo(private val selectedElement: ColumnAdvancedSettings) : DialogWr
                 val element = columnAttributeList.selectedValue
                 if (element != null) {
                     selectedElement = element.key!!
-                    val inputDialog = ColumnAttribute(selectedElement)
+                    val inputDialog = InputDColumnAttribute(selectedElement)
                     inputDialog.show()
 
                     // Get the results when click the OK button

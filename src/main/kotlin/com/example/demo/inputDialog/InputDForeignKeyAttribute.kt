@@ -9,7 +9,7 @@ import java.awt.CardLayout
 import java.io.File
 import javax.swing.*
 
-class ForeignKeyAttribute(
+class InputDForeignKeyAttribute(
     selectedElement: String,
     parentColumns: DefaultListModel<Pair<String, String>>,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,

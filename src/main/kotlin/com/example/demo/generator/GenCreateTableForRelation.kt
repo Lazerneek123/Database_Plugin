@@ -5,7 +5,7 @@ import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 import com.example.demo.tableConfig.Relation
 
-class CreateTableForRelation {
+class GenCreateTableForRelation {
     private var code = ""
 
     fun generate(

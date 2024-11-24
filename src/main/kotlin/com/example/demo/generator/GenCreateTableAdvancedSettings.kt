@@ -8,7 +8,7 @@ import com.example.demo.model.PrimaryKey
 import com.example.demo.tableConfig.TableCreate
 import javax.swing.DefaultListModel
 
-class CreateTableAdvancedSettings(
+class GenCreateTableAdvancedSettings(
     private val entityAttribute: EntityAdvancedSettings?,
     private val isEntity: Boolean,
     private val isColumnInfo: Boolean

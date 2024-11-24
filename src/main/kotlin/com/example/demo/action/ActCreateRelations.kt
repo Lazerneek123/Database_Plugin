@@ -1,12 +1,12 @@
 package com.example.demo.action
 
-import com.example.demo.inputDialog.ChooseRelation
+import com.example.demo.inputDialog.InputDChooseRelation
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.project.Project
 
-class CreateRelations : AnAction() {
+class ActCreateRelations : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (selectedFile != null) {
@@ -32,7 +32,7 @@ class CreateRelations : AnAction() {
         directoryPath: String,
         packagePath: String
     ) {
-        val inputDialog = ChooseRelation(directoryPath, packagePath, project)
+        val inputDialog = InputDChooseRelation(directoryPath, packagePath, project)
         inputDialog.show()
     }
 }

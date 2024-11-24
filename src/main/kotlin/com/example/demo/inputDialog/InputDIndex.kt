@@ -10,7 +10,7 @@ import javax.swing.*
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class Index(
+class InputDIndex(
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>
 ) : DialogWrapper(true) {
@@ -64,17 +64,17 @@ class Index(
                 val element = indexAttributeList.selectedValue
                 if (element != null) {
                     selectedElement = element.key!!
-                    val indexAttributeInputDialog =
-                        IndexAttribute(countValue, selectedElement, listModelPrimaryKey, listModelColumn)
-                    indexAttributeInputDialog.show()
+                    val inputDIndexAttributeInputDialog =
+                        InputDIndexAttribute(countValue, selectedElement, listModelPrimaryKey, listModelColumn)
+                    inputDIndexAttributeInputDialog.show()
 
                     // Get the results when you click the OK button
-                    if (indexAttributeInputDialog.isOK) {
+                    if (inputDIndexAttributeInputDialog.isOK) {
                         if (selectedElement == attributeIndex[1]) {
-                            countValue = indexAttributeInputDialog.getValueCount()
+                            countValue = inputDIndexAttributeInputDialog.getValueCount()
                         }
 
-                        val pair = indexAttributeInputDialog.getSelectedValue()
+                        val pair = inputDIndexAttributeInputDialog.getSelectedValue()
                         indexAttributeListModel.elements().toList().forEachIndexed { index, element ->
                             if (element.key == pair.key) {
                                 val updatedElement = mapOf(element.key to pair.value).entries.first()

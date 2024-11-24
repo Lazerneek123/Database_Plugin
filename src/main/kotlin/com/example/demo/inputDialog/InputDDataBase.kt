@@ -21,7 +21,7 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class Table(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
+class InputDDataBase(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
     private val cardLayout = CardLayout()
     private val panelMain = JPanel(cardLayout)
 
@@ -113,7 +113,7 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
                     val indexColumn = listColumnsAttribute.locationToIndex(e.point)
                     if (indexColumn >= 0) {
                         val selectedElement = listColumnsAttribute.model.getElementAt(indexColumn)
-                        val inputDialog = ColumnInfo(selectedElement!!)
+                        val inputDialog = InputDColumnInfo(selectedElement!!)
                         inputDialog.show()
 
                         // Get the results when you click the OK button
@@ -248,7 +248,7 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
                         selectedElement = element.key
 
                         val inputDialog =
-                            EntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath)
+                            InputDEntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath)
                         inputDialog.show()
 
                         // Get the results when you click the OK button
@@ -347,12 +347,12 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
         // Add button
         val addBtnColumn = JButton("Add")
         addBtnColumn.addActionListener {
-            val column = Column()
-            column.show()
+            val inputDColumn = InputDColumn()
+            inputDColumn.show()
 
             // Get the results when you click the OK button
-            if (column.isOK) {
-                val columnName = column.getColumnName()
+            if (inputDColumn.isOK) {
+                val columnName = inputDColumn.getColumnName()
 
                 // Checking for a name match
                 if (listModelColumn.elements().toList()
@@ -365,9 +365,9 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
                         "Error:"
                     )
                 } else {
-                    val dataType = column.getColumnDataType()
-                    val value = column.getColumnValue()
-                    val nullable = column.getColumnNullable()
+                    val dataType = inputDColumn.getColumnDataType()
+                    val value = inputDColumn.getColumnValue()
+                    val nullable = inputDColumn.getColumnNullable()
 
                     val newColumn = Column(columnName, dataType, value, nullable)
                     listModelColumn.addElement(newColumn)
@@ -419,12 +419,12 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
         val addBtnPrimaryKey = JButton("Add")
         addBtnPrimaryKey.addActionListener {
             // Click your own InputDialog
-            val primaryKey = PrimaryKey()
-            primaryKey.show()
+            val inputDPrimaryKey = InputDPrimaryKey()
+            inputDPrimaryKey.show()
 
             // Get the results when you click the OK button
-            if (primaryKey.isOK) {
-                val columnName = primaryKey.getPrimaryKeyName()
+            if (inputDPrimaryKey.isOK) {
+                val columnName = inputDPrimaryKey.getPrimaryKeyName()
 
                 // Checking for a name match
                 if (listModelPrimaryKey.elements().toList().any { it.name == columnName } ||
@@ -436,9 +436,9 @@ class Table(private val directoryPath: String, private val event: AnActionEvent)
                         "Error:"
                     )
                 } else {
-                    val dataType = primaryKey.getPrimaryKeyDataType()
-                    val value = primaryKey.getPrimaryKeyValue()
-                    val autoGenerator = primaryKey.getPrimaryKeyAutoGenerate()
+                    val dataType = inputDPrimaryKey.getPrimaryKeyDataType()
+                    val value = inputDPrimaryKey.getPrimaryKeyValue()
+                    val autoGenerator = inputDPrimaryKey.getPrimaryKeyAutoGenerate()
 
                     val newPrimaryKey = PrimaryKey(columnName, dataType, autoGenerator, value)
                     listModelPrimaryKey.addElement(newPrimaryKey)
