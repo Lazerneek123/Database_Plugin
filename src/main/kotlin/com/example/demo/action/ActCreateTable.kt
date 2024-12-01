@@ -78,7 +78,7 @@ class ActCreateTable : AnAction() {
     }
 
     private fun Project.showNotification(message: String) {
-        val groupId = "Custom Notification Group"
+        val groupId = "Database Plugin Notification Group"
         NotificationGroupManager.getInstance().getNotificationGroup(groupId)
             .createNotification("Database class", message, NotificationType.INFORMATION).notify(this)
     }

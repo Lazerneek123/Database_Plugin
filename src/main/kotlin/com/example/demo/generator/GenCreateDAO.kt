@@ -1,34 +1,32 @@
 package com.example.demo.generator
 
+import com.example.demo.dAOConfig.DAOCreate
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.model.Column
-import com.example.demo.model.PrimaryKey
-import com.example.demo.tableConfig.TableCreate
+import com.example.demo.model.Query
 
-class GenCreateDAO {
+class GenCreateDAO(
+    private val config: DAOCreate
+) {
     private var code = ""
 
-    fun generate(
-        config: TableCreate
-    ): String {
+    fun generate(): String {
         code = """
                 package ${config.getPath()}
 
-                import androidx.room.Entity
-                import androidx.room.PrimaryKey
+                import androidx.room.*
+                import androidx.room.Dao
+                import ${config.getPathChooseFile()}
 
-                @Entity
-                data class ${CapitalizeFirstLetter().uppercaseChar(config.getTableName())}(
-                ${generateColumns(config.getListColumnData())}
-                ) {
-                    ${generatePrimaryKeys(config.getListPrimaryKeyData())}       
+                @Dao
+                interface ${CapitalizeFirstLetter().uppercaseChar(config.getName())} {
+                    ${generateQueries(config.getListQuery())}
                 }
             """.trimIndent()
 
         return code
     }
 
-    private fun generatePrimaryKeys(list: List<PrimaryKey>): String {
+    private fun generateQueries(list: List<Query>): String {
         var content = ""
 
         for (i in list.indices) {
@@ -37,36 +35,65 @@ class GenCreateDAO {
                     
                 """
             }
-            val autoGenerate = list[i].autoGenerateValue
+            var cont = ""
+            val typeQuery = list[i].typeQuery
+            val query = list[i].query
             val name = list[i].name
-            val dataType = list[i].dataType
-            val value = list[i].value
 
-            val cont = """
-                    @PrimaryKey(autoGenerate = $autoGenerate)
-                    var $name: $dataType = $value"""
-            content += cont
-        }
-        return content
-    }
+            if (query != true) {
+                //val entity = list[i].entity
+                //val onConflict = list[i].onConflict
 
-    private fun generateColumns(list: List<Column>): String {
-        var content = ""
+                cont = when (typeQuery) {
+                    "AllUsers" -> """
+                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s")
+                    fun $name(): List<${
+                        CapitalizeFirstLetter().uppercaseChar(
+                            config.getFileChooseName()
+                        )
+                    }>"""
 
-        for (i in list.indices) {
-            if (i >= 1) {
-                content += """
-                    
-                """
+                    "ListUsersEmpty" -> """
+                    @Query("SELECT * from ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s LIMIT 1")
+                    fun $name(): ${
+                        CapitalizeFirstLetter().uppercaseChar(
+                            config.getFileChooseName()
+                        )
+                    }?"""
+
+                    "SearchUsersByNameLetter" -> """
+                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s WHERE name LIKE '%' || :${
+                        CapitalizeFirstLetter().lowercaseChar(
+                            config.getFileChooseName()
+                        )
+                    } || '%'")
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: String): List<${
+                        CapitalizeFirstLetter().uppercaseChar(
+                            config.getFileChooseName()
+                        )
+                    }>"""
+                    // Other options to choose from
+                    else -> """
+                    @$typeQuery(entity = ${CapitalizeFirstLetter().uppercaseChar(config.getFileChooseName())}::class, onConflict = OnConflictStrategy.REPLACE)
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: ${
+                        CapitalizeFirstLetter().uppercaseChar(
+                            config.getFileChooseName()
+                        )
+                    })"""
+                }
+
+            } else {
+                val valueQuery = list[i].valueQuery
+                cont = """
+                    @$typeQuery("$valueQuery")
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: ${
+                    CapitalizeFirstLetter().uppercaseChar(
+                        config.getFileChooseName()
+                    )
+                })"""
             }
-            val nullable = list[i].nullable
-            val cont = """
-                    val ${list[i].name}: ${list[i].dataType}${columnQuestionMark(nullable)} = ${list[i].value}"""
-            content += cont
 
-            if (i < list.size - 1) {
-                content += ","
-            }
+            content += cont
         }
         return content
     }

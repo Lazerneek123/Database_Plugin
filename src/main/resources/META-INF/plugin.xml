@@ -65,7 +65,7 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Custom Notification Group" displayType="BALLOON"/>
+        <notificationGroup id="Database Plugin Notification Group" displayType="BALLOON"/>
     </extensions>
 
 </idea-plugin>

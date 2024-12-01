@@ -21,7 +21,7 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class InputDLiveDataVsFlow(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
+class InputDLiveDataOrFlow(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
     private val cardLayout = CardLayout()
     private val panelMain = JPanel(cardLayout)
 
