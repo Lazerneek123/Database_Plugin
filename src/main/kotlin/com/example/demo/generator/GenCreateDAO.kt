@@ -15,7 +15,7 @@ class GenCreateDAO(
 
                 import androidx.room.*
                 import androidx.room.Dao
-                import ${config.getPathChooseFile()}
+                ${generateImports()}
 
                 @Dao
                 interface ${CapitalizeFirstLetter().uppercaseChar(config.getName())} {
@@ -24,6 +24,21 @@ class GenCreateDAO(
             """.trimIndent()
 
         return code
+    }
+
+    private fun generateImports(): String {
+        var content = ""
+        val uniquePackages = mutableSetOf<String>()
+
+        for (i in config.getListQuery().indices) {
+            val packageFile = config.getListQuery()[i].packageFile
+
+            if (uniquePackages.add(packageFile)) { // Checking for repetition
+                content += """import ${config.getListQuery()[i].packageFile}
+                """
+            }
+        }
+        return content
     }
 
     private fun generateQueries(list: List<Query>): String {
@@ -39,45 +54,60 @@ class GenCreateDAO(
             val typeQuery = list[i].typeQuery
             val query = list[i].query
             val name = list[i].name
+            val nameFile = list[i].nameChooseFile
 
             if (query != true) {
                 //val entity = list[i].entity
                 //val onConflict = list[i].onConflict
 
                 cont = when (typeQuery) {
-                    "AllUsers" -> """
-                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s")
+                    "AllEntity" -> """
+                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(nameFile)}s")
                     fun $name(): List<${
                         CapitalizeFirstLetter().uppercaseChar(
-                            config.getFileChooseName()
+                            nameFile
                         )
                     }>"""
 
-                    "ListUsersEmpty" -> """
-                    @Query("SELECT * from ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s LIMIT 1")
+                    "ListEntitysEmpty" -> """
+                    @Query("SELECT * from ${CapitalizeFirstLetter().lowercaseChar(nameFile)}s LIMIT 1")
                     fun $name(): ${
                         CapitalizeFirstLetter().uppercaseChar(
-                            config.getFileChooseName()
+                            nameFile
                         )
                     }?"""
 
-                    "SearchUsersByNameLetter" -> """
-                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}s WHERE name LIKE '%' || :${
+                    "SearchEntitysByNameLetter" -> """
+                    @Query("SELECT * FROM ${CapitalizeFirstLetter().lowercaseChar(nameFile)}s WHERE name LIKE '%' || :${
                         CapitalizeFirstLetter().lowercaseChar(
-                            config.getFileChooseName()
+                            nameFile
                         )
                     } || '%'")
-                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: String): List<${
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(nameFile)}: String): List<${
                         CapitalizeFirstLetter().uppercaseChar(
-                            config.getFileChooseName()
+                            nameFile
                         )
                     }>"""
+
+                    "Delete" -> """
+                    @$typeQuery(entity = ${CapitalizeFirstLetter().uppercaseChar(nameFile)}::class)
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(nameFile)}: ${
+                        CapitalizeFirstLetter().uppercaseChar(
+                            nameFile
+                        )
+                    })"""
                     // Other options to choose from
                     else -> """
-                    @$typeQuery(entity = ${CapitalizeFirstLetter().uppercaseChar(config.getFileChooseName())}::class, onConflict = OnConflictStrategy.REPLACE)
-                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: ${
+                    @$typeQuery(entity = ${CapitalizeFirstLetter().uppercaseChar(nameFile)}::class${
+                        if (list[i].onConflict != null) {
+                            ", onConflict = OnConflictStrategy.${config.getListQuery()[i].onConflict}"
+                        } else {
+                            ""
+                        }
+                    })
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(nameFile)}: ${
                         CapitalizeFirstLetter().uppercaseChar(
-                            config.getFileChooseName()
+                            nameFile
                         )
                     })"""
                 }
@@ -86,7 +116,7 @@ class GenCreateDAO(
                 val valueQuery = list[i].valueQuery
                 cont = """
                     @$typeQuery("$valueQuery")
-                    fun $name(${CapitalizeFirstLetter().lowercaseChar(config.getFileChooseName())}: ${
+                    fun $name(${CapitalizeFirstLetter().lowercaseChar(nameFile)}: ${
                     CapitalizeFirstLetter().uppercaseChar(
                         config.getFileChooseName()
                     )

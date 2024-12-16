@@ -22,7 +22,7 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
     val message: String = "Create sucsasfull"
     private val panelMain = JPanel()
     private var selectedFileName: String? = null
-    private var selectedFilePath: String? = null
+    private var selectedFilePathPackage: String? = null
 
     private val nameLabel = JLabel("Name:")
     private val nameTableField = JTextField()
@@ -54,7 +54,6 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
         panelQueries.layout = BoxLayout(panelQueries, BoxLayout.X_AXIS)
         panelCreateQueries(panelQueries)
         panelMain.add(panelQueries)
-
     }
 
     private fun panelCreateQueries(panel: JPanel) {
@@ -70,6 +69,9 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
                 val queryType = inputDialog.getQueryType()
                 val query = inputDialog.getManualInput()
                 val valueQuery = inputDialog.getValueQuery()
+                val onConflict = inputDialog.getOnConflict()
+
+
 
                 listModelQuery.addElement(
                     Query(
@@ -77,8 +79,10 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
                         query,
                         name,
                         null,
-                        null,
-                        valueQuery
+                        onConflict,
+                        valueQuery,
+                        selectedFilePathPackage!!,
+                        selectedFileName!!
                     )
                 )
             }
@@ -104,7 +108,6 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
         panel.add(buttonPanel, BorderLayout.SOUTH)
     }
 
-
     private fun panelChooseFile() {
         panelMain.layout = BoxLayout(panelMain, BoxLayout.Y_AXIS)
 
@@ -115,7 +118,7 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
         constraints.gridx = 0
         constraints.gridy = 0
         constraints.fill = GridBagConstraints.CENTER
-        constraints.insets = JBUI.insets(1) // Відступи
+        constraints.insets = JBUI.insets(1)
 
         // Uploading an image
         val icon = AllIcons.General.OpenDisk
@@ -168,7 +171,7 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
                 val sourceRoot = "src${File.separator}main${File.separator}java${File.separator}"
                 val packageName =
                     fileChooser.selectedFile.canonicalFile.parentFile.absolutePath.substringAfterLast(sourceRoot)
-                selectedFilePath = packageName.replace(File.separator, ".") + ".$selectedFileName"
+                selectedFilePathPackage = packageName.replace(File.separator, ".") + ".$selectedFileName"
 
                 labelFile.text = "File Name: " + fileChooser.selectedFile.name
                 checkConditions()
@@ -218,7 +221,7 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
     }
 
     fun getPathChooseFile(): String {
-        return selectedFilePath.toString()
+        return selectedFilePathPackage.toString()
     }
 
     fun getNameChooseFile(): String {

@@ -6,5 +6,7 @@ data class Query(
     val name: String,
     val entity: String?,
     val onConflict: String?,
-    val valueQuery: String?
+    val valueQuery: String?,
+    val packageFile: String,
+    val nameChooseFile: String
 )

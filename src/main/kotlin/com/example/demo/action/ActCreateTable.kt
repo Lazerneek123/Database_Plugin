@@ -151,7 +151,6 @@ class ActCreateTable : AnAction() {
                 openFileInEditor(project, file!!)
             }
 
-
         } catch (e: IOException) {
             e.printStackTrace()
             event.project?.showNotification(e.message!!)
