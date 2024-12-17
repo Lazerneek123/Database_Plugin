@@ -1,4 +1,4 @@
-package com.example.demo.dAOConfig
+package com.example.demo.daoConfig
 
 import com.example.demo.model.Query
 

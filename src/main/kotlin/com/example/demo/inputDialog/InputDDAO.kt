@@ -71,8 +71,6 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
                 val valueQuery = inputDialog.getValueQuery()
                 val onConflict = inputDialog.getOnConflict()
 
-
-
                 listModelQuery.addElement(
                     Query(
                         queryType,

@@ -1,7 +1,7 @@
 package com.example.demo.action
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.GenCreateTableAdvancedSettings
+import com.example.demo.generator.GenCreateTable
 import com.example.demo.inputDialog.InputDTable
 import com.example.demo.tableConfig.TableCreate
 import com.intellij.notification.NotificationGroupManager
@@ -127,7 +127,7 @@ class ActCreateTable : AnAction() {
                     )
                 }*/
 
-                content = GenCreateTableAdvancedSettings(
+                content = GenCreateTable(
                     inputDialog.getListModelEntityAttribute(),
                     inputDialog.isEntity(),
                     inputDialog.isColumnInfo()
