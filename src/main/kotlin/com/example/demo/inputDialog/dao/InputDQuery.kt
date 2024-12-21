@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.dao
 
 import com.example.demo.element.TextFieldRegex
 import com.intellij.openapi.ui.DialogWrapper

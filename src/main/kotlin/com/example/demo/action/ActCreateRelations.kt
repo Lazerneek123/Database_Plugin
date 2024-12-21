@@ -1,6 +1,6 @@
 package com.example.demo.action
 
-import com.example.demo.inputDialog.InputDChooseRelation
+import com.example.demo.inputDialog.relation.InputDChooseRelation
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys

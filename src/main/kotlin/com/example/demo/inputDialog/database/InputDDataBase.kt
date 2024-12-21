@@ -1,6 +1,10 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.database
 
 import com.example.demo.element.TextFieldRegex
+import com.example.demo.inputDialog.table.InputDColumn
+import com.example.demo.inputDialog.table.InputDColumnInfo
+import com.example.demo.inputDialog.table.InputDEntityAttribute
+import com.example.demo.inputDialog.table.InputDPrimaryKey
 import com.example.demo.model.Column
 import com.example.demo.model.ColumnAdvancedSettings
 import com.example.demo.model.EntityAdvancedSettings

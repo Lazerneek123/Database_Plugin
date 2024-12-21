@@ -18,7 +18,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.IOException
 
-class ActCreateTable : AnAction() {
+class ActCreateFlow : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (selectedFile != null) {

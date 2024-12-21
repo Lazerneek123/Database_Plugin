@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.table
 
 import com.example.demo.model.ColumnAdvancedSettings
 import com.example.demo.tableConfig.ColumnAttribute

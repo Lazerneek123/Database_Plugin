@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.dao
 
 import com.example.demo.element.TextFieldRegex
 import com.example.demo.model.*
@@ -172,7 +172,6 @@ class InputDDAO(private val directoryPath: String, private val event: AnActionEv
                 selectedFilePathPackage = packageName.replace(File.separator, ".") + ".$selectedFileName"
 
                 labelFile.text = "File Name: " + fileChooser.selectedFile.name
-                checkConditions()
             } else {
                 Messages.showErrorDialog(
                     "The file does not contain the @Entity annotation!",

@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.table
 
 import com.example.demo.element.TextFieldRegex
 import com.example.demo.element.TextFieldValueColumn

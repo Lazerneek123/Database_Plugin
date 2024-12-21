@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.table
 
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey

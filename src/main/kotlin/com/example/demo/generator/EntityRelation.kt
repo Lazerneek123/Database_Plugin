@@ -1,6 +1,6 @@
 package com.example.demo.generator
 
-import com.example.demo.inputDialog.InputDRelation
+import com.example.demo.inputDialog.relation.InputDRelation
 
 fun entityRelation(inputDialog: InputDRelation): String {
     return """

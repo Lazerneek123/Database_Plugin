@@ -3,7 +3,7 @@ package com.example.demo.action
 import com.example.demo.daoConfig.DAOCreate
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.GenCreateDAO
-import com.example.demo.inputDialog.InputDDAO
+import com.example.demo.inputDialog.dao.InputDDAO
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction

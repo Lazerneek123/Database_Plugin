@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.table
 
 import com.example.demo.element.TextFieldRegex
 import com.example.demo.model.Column
@@ -21,7 +21,7 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class InputDLiveDataOrFlow(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
+class InputDTable(private val directoryPath: String, private val event: AnActionEvent) : DialogWrapper(true) {
     private val cardLayout = CardLayout()
     private val panelMain = JPanel(cardLayout)
 

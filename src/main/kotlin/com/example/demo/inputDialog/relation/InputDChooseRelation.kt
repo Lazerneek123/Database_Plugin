@@ -1,4 +1,4 @@
-package com.example.demo.inputDialog
+package com.example.demo.inputDialog.relation
 
 import com.example.demo.element.CapitalizeFirstLetter
 import com.example.demo.generator.*

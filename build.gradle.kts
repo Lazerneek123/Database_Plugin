@@ -16,9 +16,9 @@ repositories {
 intellij {
     version.set("2022.2.5")
     type.set("IC") // Target IDE Platform
-
-    plugins.set(listOf("android"))
+    plugins.set(listOf("android","org.jetbrains.kotlin"))
 }
+
 
 tasks {
     // Set the JVM compatibility versions
