@@ -1,23 +1,43 @@
-package com.example.demo.inputDialog.dao
+package com.example.demo.inputDialog.generate
 
 import com.example.demo.element.TextFieldRegex
 import com.example.demo.model.Query
 import com.example.demo.model.QueryType
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
+import com.intellij.util.IconUtil
+import org.jetbrains.kotlin.idea.core.util.toVirtualFile
 import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.awt.GridBagLayout
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 class InputDQuery(
     private val listQuery: JList<Query>,
-    private val ktFile: KtFile?
+    private val directoryPath: String,
+    private val project: Project
 ) : DialogWrapper(true) {
     private val panel = JPanel()
+
+    private var selectedPath: String? = null
+    private var selectedFileName: String? = null
+    private var selectedClassName: String? = null
+    private var selectedFilePathPackage: String? = null
+    private var ktFile: KtFile? = null
 
     private val nameLabel = JLabel("Name:")
     private val nameField = JTextField(10)
@@ -148,14 +168,122 @@ class InputDQuery(
         queryPanel.add(Box.createVerticalStrut(5))
         queryPanel.add(scrollPane)
 
+        val chooseFilePane = JPanel(/*FlowLayout(FlowLayout.LEFT)*//*GridBagLayout()*/)
+        chooseFilePane.layout = BoxLayout(chooseFilePane, BoxLayout.Y_AXIS)
+        val icon = AllIcons.General.OpenDisk
+
+        // Change the size of the icon
+        val scaledIcon = IconUtil.scale(icon, 5.0)
+
+        // Create a label for the image
+        val labelIcon = JLabel(scaledIcon)
+        val labelFile = JLabel("File Name:")
+        labelIcon.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                fileChooser(labelFile)
+            }
+        })
+
+        nameField.isEnabled = false
+        comboBoxQueryCategories.isEnabled = false
+        comboBoxQueryOnConflict.isEnabled = false
+
+        chooseFilePane.add(labelIcon)
+        chooseFilePane.add(labelFile)
+
+
         isOKActionEnabled = false
 
+        panel.add(chooseFilePane)
         panel.add(namePanel)
         panel.add(comboBoxPanel)
         panel.add(columnPanel)
         panel.add(onConflictPanel)
         panel.add(queryPanel)
     }
+
+    private fun fileChooser(labelFile: JLabel) {
+        val currentDirectory = File(directoryPath)
+
+        val fileChooser = JFileChooser(currentDirectory)
+        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY // Limit file selection to files only
+
+        val result = fileChooser.showOpenDialog(null) // Show file selection dialog
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedPath = fileChooser.selectedFile.path
+
+            val virtualFile = LocalFileSystem.getInstance().findFileByPath(selectedPath!!)!!
+            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+            ktFile = psiFile as? KtFile
+
+            // Checking for the presence of an annotation @Entity
+            if (fileChooser.selectedFile.toVirtualFile() != null) {
+                val isEntity = isEntityFile(fileChooser.selectedFile.toVirtualFile()!!, project)
+                if (isEntity) {
+                    selectedFileName = fileChooser.selectedFile.nameWithoutExtension
+
+                    val selectedFile = fileChooser.selectedFile
+                    val virtualFile = selectedFile.toVirtualFile()!!
+
+                    // Якщо потрібно дізнатися назву класу в файлі:
+                    val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? KtFile
+                    selectedClassName = psiFile?.let { findClassNameInFile(it) } ?: selectedFile.name
+
+                    // Getting the file package path
+                    val sourceRoot = "src${File.separator}main${File.separator}java${File.separator}"
+                    val packageName =
+                        fileChooser.selectedFile.canonicalFile.parentFile.absolutePath.substringAfterLast(sourceRoot)
+                    selectedFilePathPackage = packageName.replace(File.separator, ".") + ".$selectedClassName"
+
+                    labelFile.text = "File Name: " + fileChooser.selectedFile.name
+
+                    checkConditionsFileChoose()
+                } else {
+                    Messages.showErrorDialog(
+                        "The file is not a table!",
+                        "Error:"
+                    )
+                }
+            } else {
+                return
+            }
+        }
+    }
+
+    private fun findClassNameInFile(ktFile: KtFile): String? {
+        return ktFile.declarations
+            .filterIsInstance<KtClass>() // Знаходимо всі класи
+            .firstOrNull()?.name         // Беремо назву першого класу
+    }
+
+    private fun checkConditionsFileChoose() {
+        nameField.isEnabled = true
+        comboBoxQueryCategories.isEnabled = true
+        comboBoxQueryOnConflict.isEnabled = true
+    }
+
+    private fun isEntityFile(file: VirtualFile, project: Project): Boolean {
+        // Завантажуємо файл як KtFile через PSI
+        val psiFile = PsiManager.getInstance(project).findFile(file) as? KtFile ?: return false
+
+        // Обходимо всі декларації у файлі
+        for (declaration in psiFile.declarations) {
+            // Перевіряємо, чи є це клас або об'єкт
+            if (declaration is KtClassOrObject) {
+                // Отримуємо всі анотації, прив'язані до класу/об'єкта
+                val annotations = declaration.annotationEntries
+                for (annotation in annotations) {
+                    val annotationName = annotation.shortName?.asString()
+                    if (annotationName == "Entity") {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
 
     private fun checkComboBoxQueryTypes(selectedItem: Any, onConflictPanel: JPanel, columnPanel: JPanel) {
         when (selectedItem.toString()) {
@@ -216,6 +344,7 @@ class InputDQuery(
                 columnPanel.isVisible = true
 
                 comboBoxQueryColumn.removeAllItems()
+
                 // Додаємо нові елементи в JComboBox
                 val newItems = findConstructorParametersWithColumnInfo(ktFile)
                 newItems.forEach { item ->
@@ -224,7 +353,7 @@ class InputDQuery(
                 // Зберігаємо новий список у listColumn
                 listColumn = newItems
 
-                columnSelect = comboBoxQueryColumn.selectedItem!!.toString()
+                //columnSelect = comboBoxQueryColumn.selectedItem?.toString()
 
                 panel.preferredSize = Dimension(200, 100)
                 pack()
@@ -247,7 +376,8 @@ class InputDQuery(
     private fun checkConditions() {
         val name = nameField.text
         // Condition check
-        val conditionsMet: Boolean = comboBoxQueryOnConflict.isEnabled && name.isNotEmpty()
+        val conditionsMet: Boolean =
+            comboBoxQueryOnConflict.isEnabled && name.isNotEmpty() && selectedFileName!!.isNotEmpty()
 
         // Activate or deactivate the OK button
         isOKActionEnabled = conditionsMet
@@ -371,5 +501,21 @@ class InputDQuery(
 
     fun getColumnSelected(): String? {
         return columnSelect
+    }
+
+    fun getSelectedFilePathPackage(): String {
+        return selectedFilePathPackage.toString()
+    }
+
+    fun getSelectedFileName(): String {
+        return selectedFileName.toString()
+    }
+
+    fun getSelectedClassName(): String {
+        return selectedClassName.toString()
+    }
+
+    fun getKtFileSelecte(): KtFile {
+        return ktFile!!
     }
 }

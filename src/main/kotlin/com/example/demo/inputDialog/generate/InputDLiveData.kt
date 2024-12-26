@@ -2,6 +2,8 @@ package com.example.demo.inputDialog.generate
 
 import com.example.demo.element.TextFieldRegex
 import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -252,6 +254,7 @@ class InputDLiveData(
             //checkConditions()
 
             val filePath = getSelectePath() // Шлях до файлу у вигляді String
+            project.showNotification(filePath)
             val virtualFileSelected = LocalFileSystem.getInstance().findFileByPath(filePath)
             val psiFileSelected = PsiManager.getInstance(project).findFile(virtualFileSelected!!)
             var nameClass: String? = null
@@ -326,5 +329,11 @@ class InputDLiveData(
 
     fun getStructure(): Boolean {
         return listCheckBox.isSelected
+    }
+
+    private fun Project.showNotification(message: String) {
+        val groupId = "Database Plugin Notification Group"
+        NotificationGroupManager.getInstance().getNotificationGroup(groupId)
+            .createNotification("Database class", message, NotificationType.INFORMATION).notify(this)
     }
 }

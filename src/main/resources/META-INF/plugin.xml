@@ -73,13 +73,19 @@
                     class="com.example.demo.action.ActCreateLiveData"
                     text="LiveData"
                     icon="AllIcons.General.Add"
-                    description="Create LiveData">
+                    description="Create liveData">
             </action>
             <action id="com.example.demo.action.ActCreateFlow"
                     class="com.example.demo.action.ActCreateFlow"
                     text="Flow"
                     icon="AllIcons.General.Add"
-                    description="Create Flow">
+                    description="Create flow">
+            </action>
+            <action id="com.example.demo.action.ActCreateQuery"
+                    class="com.example.demo.action.ActCreateQuery"
+                    text="Query"
+                    icon="AllIcons.General.TodoQuestion"
+                    description="Create query">
             </action>
         </group>
     </actions>

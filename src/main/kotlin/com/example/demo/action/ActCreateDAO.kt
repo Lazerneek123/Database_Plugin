@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 import java.io.IOException
 
 class ActCreateDAO : AnAction() {
@@ -39,32 +40,38 @@ class ActCreateDAO : AnAction() {
         packagePath: String,
         event: AnActionEvent
     ) {
-        val inputDialog = InputDDAO(directoryPath, event)
-        if (inputDialog.showAndGet()) {
-            var fileName = inputDialog.getFileName()
+        val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
+        if (selectedFile != null) {
+            //val path = selectedFile.path
+            //val virtualFile = LocalFileSystem.getInstance().findFileByPath(path) ?: return
+            //val psiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return
 
-            if (fileName.isNotEmpty()) {
-                val name = "${CapitalizeFirstLetter().uppercaseChar(fileName)}.kt"
-                ApplicationManager.getApplication().runWriteAction {
+            val inputDialog = InputDDAO(directoryPath, event, project)
+            if (inputDialog.showAndGet()) {
+                var fileName = inputDialog.getFileName()
+                if (fileName.isNotEmpty()) {
+                    val name = "${CapitalizeFirstLetter().uppercaseChar(fileName)}.kt"
+                    ApplicationManager.getApplication().runWriteAction {
+                        createKotlinFile(
+                            project,
+                            directoryPath,
+                            packagePath,
+                            name,
+                            inputDialog,
+                            event
+                        )
+                    }
+                } else {
+                    fileName = "NewDatabaseKotlinFile.kt"
                     createKotlinFile(
                         project,
                         directoryPath,
                         packagePath,
-                        name,
+                        fileName,
                         inputDialog,
                         event
                     )
                 }
-            } else {
-                fileName = "NewDatabaseKotlinFile.kt"
-                createKotlinFile(
-                    project,
-                    directoryPath,
-                    packagePath,
-                    fileName,
-                    inputDialog,
-                    event
-                )
             }
         }
     }
