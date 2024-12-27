@@ -1,165 +1,188 @@
 package com.example.demo.action
 
-import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.generator.GenCreateTable
-import com.example.demo.inputDialog.table.InputDTable
-import com.example.demo.tableConfig.TableCreate
+import com.example.demo.inputDialog.generate.InputDFlow
+import com.intellij.codeInsight.hint.HintManager
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
-import java.io.IOException
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.*
 
 class ActCreateFlow : AnAction() {
+    private lateinit var project: Project
+
     override fun actionPerformed(event: AnActionEvent) {
+        project = event.project ?: return
+        val editor = event.getData(CommonDataKeys.EDITOR) ?: return
+
         val selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (selectedFile != null) {
-            // Get the project
-            val project = event.project
-
-            // Get the path to the directory in which to create a new file
             val directoryPath = selectedFile.path
+            val virtualFile = LocalFileSystem.getInstance().findFileByPath(directoryPath) ?: return
+            val psiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return
+            val caretOffset = editor.caretModel.offset
+            val insertionPoint = findInsertionPointByCaret(editor, psiFile) ?: return
+            //val listField = getListNameFields(caretOffset, psiFile)
 
-            // Get the package path by removing the redundant parts of the path
-            val sourceRoot = "/src/main/java/"
-            val packagePathWithoutSourceRoot = directoryPath.substringAfter(sourceRoot)
+            // Відображаємо діалогове вікно для вводу параметрів
+            val inputDialog = InputDFlow(directoryPath, caretOffset, psiFile, project)
+            if (inputDialog.showAndGet()) {
+                val filePath = inputDialog.getSelectePath() // Шлях до файлу у вигляді String
 
-            // Receive the packet from the received path
-            val packagePath = packagePathWithoutSourceRoot.replace("/", ".")
+                val virtualFileSelected = LocalFileSystem.getInstance().findFileByPath(filePath) ?: return
+                val psiFileSelected = PsiManager.getInstance(project).findFile(virtualFileSelected) ?: return
 
-            messageShowInputDialog(project!!, directoryPath, packagePath, event)
+
+                val classBody = findContainingClass(psiFileSelected, caretOffset)
+                if (classBody == null) {
+                    project.showNotification("Class not found!")
+                    return
+                }
+
+                // Позиція курсора
+                val content = generateFlowObservationExpressions(
+                    inputDialog.getSelecteViewModel(),
+                    inputDialog.getName(),
+                    inputDialog.getDispatchers()
+                )
+
+                val newFields = generateFlowFields(
+                    inputDialog.getName(),
+                    inputDialog.getType(),
+                    inputDialog.getStructure(),
+                    inputDialog.getStructureType()
+                )
+
+                // Виконуємо вставку коду в місці курсора
+                ApplicationManager.getApplication().runWriteAction {
+                    WriteCommandAction.runWriteCommandAction(project) {
+                        //document.insertString(offset, content)
+                        content.forEach { expression ->
+                            insertionPoint.parent.addAfter(expression, insertionPoint)
+                        }
+                    }
+                    WriteCommandAction.runWriteCommandAction(project) {
+                        val anchor = findInsertionPointForFields(classBody)
+                        if (anchor != null && anchor.parent != classBody.body) {
+                            throw IllegalStateException("Anchor is not part of the same parent!")
+                        }
+                        //project.showNotification("Anchor is not part of the same parent! ${anchor!!.parent} | ${classBody.body}")
+                        newFields.forEach { field ->
+                            classBody.body?.addAfter(field, anchor)
+                        }
+                    }
+                }
+
+            }
+
         }
     }
 
-    private fun messageShowInputDialog(
-        project: Project,
-        directoryPath: String,
-        packagePath: String,
-        event: AnActionEvent
-    ) {
-        val inputDialog = InputDTable(directoryPath, event)
-        if (inputDialog.showAndGet()) {
-            var fileName = inputDialog.getName()
+    private fun findInsertionPointByCaret(editor: Editor, psiFile: PsiFile): PsiElement? {
+        val caretOffset = editor.caretModel.offset
+        val elementAtCaret = psiFile.findElementAt(caretOffset) ?: return null
 
-            if (fileName.isNotEmpty()) {
-                // Create a new file with the entered name and extension .kt
-                val name = "${CapitalizeFirstLetter().uppercaseChar(fileName)}.kt"
-                // Use runWriteAction to access the file system within a write-action
-                ApplicationManager.getApplication().runWriteAction {
-                    createKotlinFile(
-                        project,
-                        directoryPath,
-                        packagePath,
-                        name,
-                        inputDialog,
-                        event
-                    )
-                }
+        // Пошук методу, в якому знаходиться курсор
+        val containingFunction = PsiTreeUtil.getParentOfType(elementAtCaret, KtNamedFunction::class.java)
+        if (containingFunction != null) {
+            val body = containingFunction.bodyBlockExpression // Отримуємо тіло методу (KtBlockExpression)
+            return if (body != null && caretOffset in body.textRange.startOffset..body.textRange.endOffset) {
+                // Курсор знаходиться в межах тіла методу
+                elementAtCaret
             } else {
-                fileName = "NewDatabaseKotlinFile.kt"
-                createKotlinFile(
-                    project,
-                    directoryPath,
-                    packagePath,
-                    fileName,
-                    inputDialog,
-                    event
-                )
+                // Курсор не знаходиться в тілі методу
+                showHintMessage(editor, "Code can only be inserted inside a method body!")
+                null
             }
         }
+
+        // Якщо курсор поза межами будь-якого методу
+        showHintMessage(editor, "Code can only be inserted inside a method!")
+        return null
+    }
+
+    private fun showHintMessage(editor: Editor, message: String) {
+        HintManager.getInstance().showErrorHint(editor, message)
+    }
+
+    // Знайти клас, в якому знаходиться курсор
+    private fun findContainingClass(psiFile: PsiFile, offset: Int): KtClass? {
+        val elementAtCaret = psiFile.findElementAt(offset)
+        return PsiTreeUtil.getParentOfType(elementAtCaret, KtClass::class.java)
+    }
+
+    // Знайти правильну точку для вставки (останнє поле класу)
+    private fun findInsertionPointForFields(ktClass: KtClass): PsiElement? {
+        // Отримуємо всі декларації класу і фільтруємо тільки поля
+        val fields = ktClass.declarations.filterIsInstance<KtProperty>()
+
+        // Повертаємо останнє поле або ліву фігуруючу дужку (LBrace), якщо поля відсутні
+        return fields.lastOrNull() ?: ktClass.body?.lBrace
+    }
+
+    private fun generateFlowObservationExpressions(
+        selecteViewModel: String,
+        name: String,
+        dispatchers: String
+    ): List<KtExpression> {
+        val psiFactory = KtPsiFactory(project)
+
+        val observationExpression = psiFactory.createExpression(
+            """
+        viewModel.viewModelScope.launch(Dispatchers.$dispatchers) {
+          $selecteViewModel.$name 
+                //.map { $name -> $name.map { it.name } }
+                //.debounce(3000)
+                //.filter { $name -> $name.any { it.name!!.startsWith("r") } }
+                .collect { filteredList ->
+                    // Continuation of your code
+                }
+        }
+        """.trimIndent()
+        )
+
+        return listOf(observationExpression)
+    }
+
+    private fun generateFlowFields(
+        name: String,
+        type: String,
+        structure: Boolean,
+        structureType: String
+    ): List<KtProperty> {
+        val psiFactory = KtPsiFactory(project)
+
+        val t = if (structure) {
+            "$structureType<$type>"
+        } else {
+            type
+        }
+
+        val field1 = psiFactory.createDeclaration<KtProperty>(
+            "val $name: Flow<$t> = _$name.asSharedFlow()"
+        )
+
+        val field2 = psiFactory.createDeclaration<KtProperty>(
+            "private var _$name = MutableSharedFlow<$t>(replay = 1)"
+        )
+
+        return listOf(field1, field2)
     }
 
     private fun Project.showNotification(message: String) {
         val groupId = "Database Plugin Notification Group"
         NotificationGroupManager.getInstance().getNotificationGroup(groupId)
-            .createNotification("Database class", message, NotificationType.INFORMATION).notify(this)
-    }
-
-    private fun createKotlinFile(
-        project: Project,
-        directoryPath: String,
-        packagePath: String,
-        fileName: String,
-        inputDialog: InputDTable,
-        event: AnActionEvent
-    ) {
-        try {
-            // Use WriteCommandAction to perform write-action operations
-            WriteCommandAction.runWriteCommandAction(project) {
-                // Create a file
-                val directory = LocalFileSystem.getInstance().findFileByPath(directoryPath)
-
-                val file = directory?.createChildData(this, fileName)
-
-                // Write the contents of the file (you can also use templates to generate code)
-                val content: Any
-                /*if (inputDialog.isColumnInfo()) {
-                    content = CreateTableAdvancedSettings(
-                        inputDialog.getListModelEntityAttribute(),
-                        inputDialog.isEntity(),
-                        inputDialog.isColumnInfo()
-                    ).generate(
-                        TableCreate(
-                            packagePath,
-                            inputDialog.getTableName(),
-                            inputDialog.getPrimaryKeysData(),
-                            inputDialog.getColumnsData()
-                        ),
-                        inputDialog.getListModelColumnsAttribute()
-                    )
-                }
-                else{
-                    content = CreateTable().generate(
-                        TableCreate(
-                            packagePath,
-                            inputDialog.getTableName(),
-                            inputDialog.getPrimaryKeysData(),
-                            inputDialog.getColumnsData()
-                        )
-                    )
-                }*/
-
-                content = GenCreateTable(
-                    inputDialog.getListModelEntityAttribute(),
-                    inputDialog.isEntity(),
-                    inputDialog.isColumnInfo()
-                ).generate(
-                    TableCreate(
-                        packagePath,
-                        inputDialog.getName(),
-                        inputDialog.getPrimaryKeysData(),
-                        inputDialog.getColumnsData()
-                    ),
-                    inputDialog.getListModelColumnsAttribute()
-                )
-
-                event.project?.showNotification(inputDialog.str)
-
-
-                file?.setBinaryContent(content.toByteArray())
-
-                event.project?.showNotification("The class ${inputDialog.getName()} is successfully created!")
-                // Open a new file in a tab
-                openFileInEditor(project, file!!)
-            }
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-            event.project?.showNotification(e.message!!)
-        }
-    }
-
-    private fun openFileInEditor(project: Project, file: VirtualFile) {
-        // Open the file in a tab
-        val openFileDescriptor = OpenFileDescriptor(project, file)
-        FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, true)
+            .createNotification("Generate LiveData", message, NotificationType.INFORMATION).notify(this)
     }
 }

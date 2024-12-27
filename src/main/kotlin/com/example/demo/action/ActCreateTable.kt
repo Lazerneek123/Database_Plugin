@@ -130,7 +130,9 @@ class ActCreateTable : AnAction() {
                 content = GenCreateTable(
                     inputDialog.getListModelEntityAttribute(),
                     inputDialog.isEntity(),
-                    inputDialog.isColumnInfo()
+                    inputDialog.isColumnInfo(),
+                    inputDialog.isForeignKey(),
+                    inputDialog.isIndex()
                 ).generate(
                     TableCreate(
                         packagePath,
@@ -138,7 +140,9 @@ class ActCreateTable : AnAction() {
                         inputDialog.getPrimaryKeysData(),
                         inputDialog.getColumnsData()
                     ),
-                    inputDialog.getListModelColumnsAttribute()
+                    inputDialog.getListModelColumnsAttribute(),
+                    inputDialog.getListModelForeignKeysAttribute(),
+                    inputDialog.getListModelIndexesAttribute()
                 )
 
                 event.project?.showNotification(inputDialog.str)

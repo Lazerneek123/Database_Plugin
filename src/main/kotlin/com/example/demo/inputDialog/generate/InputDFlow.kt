@@ -27,7 +27,7 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class InputDLiveData(
+class InputDFlow(
     private val directoryPath: String,
     private val caretOffset: Int,
     private val psiFile: PsiFile,
@@ -61,6 +61,16 @@ class InputDLiveData(
         "Byte"
     )
 
+    private val typeDispatchersLabel = JLabel("Dispatchers:")
+
+    // Creating options for a drop-down list
+    private val dataDispatchersTypes = arrayOf(
+        "Main",
+        "IO",
+        "Default",
+        "Unconfined"
+    )
+
     private val dataStructureLabel = JLabel("Data structure:")
 
     // Creating options for a drop-down list
@@ -80,10 +90,11 @@ class InputDLiveData(
     // Creating a drop-down list
     private val comboBoxDateType = JComboBox(dataTypes)
     private val comboBoxDateStructure = JComboBox(dataStructure)
+    private val comboBoxDispatchers = JComboBox(dataDispatchersTypes)
     private val listCheckBox = JCheckBox("Structure")
 
     init {
-        title = "Generate LiveData"
+        title = "Generate Flow"
         init()
         isOKActionEnabled = false
 
@@ -96,6 +107,7 @@ class InputDLiveData(
         isOKActionEnabled = true
 
         panelType()
+        panelDispatchers()
         panelChooseFile()
 
         panelMain.add(Box.createVerticalStrut(5))
@@ -107,6 +119,21 @@ class InputDLiveData(
 
         panelFields()
         isOKActionEnabled = false
+    }
+
+    private fun panelDispatchers() {
+        val dispatchersPanel = JPanel()
+        dispatchersPanel.layout = BoxLayout(dispatchersPanel, BoxLayout.X_AXIS)
+
+        // Listener for JComboBox
+        comboBoxDispatchers.addActionListener {
+            //checkConditions()
+        }
+
+        dispatchersPanel.add(typeDispatchersLabel)
+        dispatchersPanel.add(comboBoxDispatchers)
+        panelMain.add(dispatchersPanel)
+        panelMain.add(Box.createVerticalStrut(15))
     }
 
     private fun panelType() {
@@ -329,6 +356,10 @@ class InputDLiveData(
 
     fun getStructure(): Boolean {
         return listCheckBox.isSelected
+    }
+
+    fun getDispatchers(): String {
+        return comboBoxDispatchers.selectedItem!!.toString()
     }
 
     private fun Project.showNotification(message: String) {

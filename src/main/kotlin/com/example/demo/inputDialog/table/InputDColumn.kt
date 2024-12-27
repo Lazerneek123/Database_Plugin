@@ -33,7 +33,7 @@ class InputDColumn : DialogWrapper(true) {
     // Creating a drop-down list
     private val comboBoxDateType = JComboBox(dataTypes)
 
-    private val valueAutoGenerateCheckBox = JCheckBox("Auto Generate")
+    private val valueAutoGenerateCheckBox = JCheckBox("Autocomplete")
     private val nullableCheckBox = JCheckBox("Nullable")
 
     init {

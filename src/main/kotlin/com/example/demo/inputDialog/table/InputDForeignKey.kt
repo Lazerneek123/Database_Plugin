@@ -5,6 +5,9 @@ import com.example.demo.model.PrimaryKey
 import com.intellij.openapi.ui.DialogWrapper
 import com.example.demo.model.ForeignKey
 import com.example.demo.tableConfig.ForeignKeyAttribute
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import javax.swing.*
 import javax.swing.event.ListDataEvent
@@ -13,14 +16,15 @@ import javax.swing.event.ListDataListener
 class InputDForeignKey(
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>,
-    directoryPath: String
+    directoryPath: String,
+    project: Project
 ) : DialogWrapper(true) {
     private val panel = JPanel()
 
     private val foreignKeyAttributeListModel = DefaultListModel<Map.Entry<String?, Any?>>()
     private val foreignKeyAttributeList = JList(foreignKeyAttributeListModel)
 
-    private var parentColumnsList = DefaultListModel<Pair<String, String>>()
+    private var parentColumnsList = DefaultListModel<String>()
 
     private var foreignKey: ForeignKey? = null
     fun getForeignKey(): ForeignKey {
@@ -66,7 +70,13 @@ class InputDForeignKey(
                 if (element != null) {
                     selectedElement = element.key!!
                     val inputDialog =
-                        InputDForeignKeyAttribute(selectedElement, parentColumnsList, listModelPrimaryKey, listModelColumn, directoryPath)
+                        InputDForeignKeyAttribute(
+                            selectedElement,
+                            parentColumnsList,
+                            listModelPrimaryKey,
+                            listModelColumn,
+                            directoryPath
+                        )
                     inputDialog.show()
 
                     // Get the results when you click the OK button
@@ -80,11 +90,12 @@ class InputDForeignKey(
                             if (element.key == pair.key) {
                                 val updatedElement = mapOf(element.key to pair.value).entries.first()
                                 foreignKeyAttributeListModel.set(index, updatedElement)
+                                //project.showNotification("key " + updatedElement.key!! + " index:$index value " + updatedElement.value)
                             }
                         }
                         foreignKey = ForeignKey(
                             foreignKeyAttributeListModel.elements().toList()[0].value as String?,
-                            foreignKeyAttributeListModel.elements().toList()[1].value as Pair<String?, String?>?,
+                            foreignKeyAttributeListModel.elements().toList()[1].value as List<String?>?,
                             foreignKeyAttributeListModel.elements().toList()[2].value as List<String?>?,
                             foreignKeyAttributeListModel.elements().toList()[3].value as String?,
                             foreignKeyAttributeListModel.elements().toList()[4].value as String?,
@@ -96,6 +107,12 @@ class InputDForeignKey(
         }
 
         panel.add(JScrollPane(foreignKeyAttributeList), BorderLayout.CENTER)
+    }
+
+    private fun Project.showNotification(message: String) {
+        val groupId = "Database Plugin Notification Group"
+        NotificationGroupManager.getInstance().getNotificationGroup(groupId)
+            .createNotification("Database class", message, NotificationType.INFORMATION).notify(this)
     }
 
     override fun createCenterPanel(): JComponent {

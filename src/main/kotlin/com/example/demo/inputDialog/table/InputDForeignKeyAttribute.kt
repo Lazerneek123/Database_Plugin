@@ -11,7 +11,7 @@ import javax.swing.*
 
 class InputDForeignKeyAttribute(
     selectedElement: String,
-    parentColumns: DefaultListModel<Pair<String, String>>,
+    parentColumns: DefaultListModel<String>,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>,
     private var directoryPath: String
@@ -176,7 +176,7 @@ class InputDForeignKeyAttribute(
                     val name = match.groupValues[2] // Name row
                     val dataType = match.groupValues[3] // Data type
 
-                    parentColumnsListModel.addElement(Pair(name, dataType))
+                    parentColumnsListModel.addElement(name)
                 }
                 isOKActionEnabled = true
             } else {
@@ -189,7 +189,7 @@ class InputDForeignKeyAttribute(
         }
     }
 
-    fun getParentColumnsListModel(): DefaultListModel<Pair<String, String>> {
+    fun getParentColumnsListModel(): DefaultListModel<String> {
         return parentColumnsListModel
     }
 

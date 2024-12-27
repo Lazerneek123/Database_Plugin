@@ -3,6 +3,7 @@ package com.example.demo.inputDialog.table
 import com.example.demo.model.Column
 import com.example.demo.model.PrimaryKey
 import com.example.demo.tableConfig.EntityAttribute
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.CardLayout
@@ -16,7 +17,8 @@ class InputDEntityAttribute(
     selectedElement: String,
     listModelPrimaryKey: DefaultListModel<PrimaryKey>,
     listModelColumn: DefaultListModel<Column>,
-    directoryPath: String
+    directoryPath: String,
+    project: Project
 ) : DialogWrapper(true) {
     private val panel = JPanel()
 
@@ -82,14 +84,15 @@ class InputDEntityAttribute(
     private val foreignKeyListModel = DefaultListModel<com.example.demo.model.ForeignKey>()
     private val foreignKeyList = JList(foreignKeyListModel)
     private val foreignKeysPanel = JPanel().apply {
-        val addBtnColumn = JButton("Add")
-        addBtnColumn.addActionListener {
-            val inputDialogIndex = InputDForeignKey(listModelPrimaryKey, listModelColumn, directoryPath)
+        val addBtnForeignKeys = JButton("Add")
+        addBtnForeignKeys.addActionListener {
+            val inputDialogIndex = InputDForeignKey(listModelPrimaryKey, listModelColumn, directoryPath, project)
             inputDialogIndex.show()
 
             // Get the results when you click the OK button
             if (inputDialogIndex.isOK) {
                 val foreignKeyElement = inputDialogIndex.getForeignKey()
+
                 foreignKeyListModel.addElement(foreignKeyElement)
                 if (!foreignKeyListModel.isEmpty) {
                     isOKActionEnabled = true
@@ -97,11 +100,14 @@ class InputDEntityAttribute(
             }
         }
 
-        val removeBtnColumn = JButton("Delete")
-        removeBtnColumn.addActionListener {
+        val removeBtnForeignKeys = JButton("Delete")
+        removeBtnForeignKeys.addActionListener {
             val selectedIndex = foreignKeyList.selectedIndex
             if (selectedIndex != -1) {
                 foreignKeyListModel.removeElementAt(selectedIndex)
+                if (foreignKeyListModel.isEmpty) {
+                    isOKActionEnabled = false
+                }
             }
         }
 
@@ -110,8 +116,8 @@ class InputDEntityAttribute(
 
         // Adding buttons to a panel
         val buttonPanel = JPanel()
-        buttonPanel.add(addBtnColumn)
-        buttonPanel.add(removeBtnColumn)
+        buttonPanel.add(addBtnForeignKeys)
+        buttonPanel.add(removeBtnForeignKeys)
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         add(buttonPanel, BorderLayout.SOUTH)
     }
@@ -129,8 +135,8 @@ class InputDEntityAttribute(
     private val indexList = JList(indexListModel)
     private val indicesPanel = JPanel().apply {
         // Add button
-        val addBtnColumn = JButton("Add")
-        addBtnColumn.addActionListener {
+        val addBtnIndex = JButton("Add")
+        addBtnIndex.addActionListener {
             val inputDialogInputDIndex = InputDIndex(listModelPrimaryKey, listModelColumn)
             inputDialogInputDIndex.show()
 
@@ -145,11 +151,14 @@ class InputDEntityAttribute(
         }
 
         // Delete button
-        val removeBtnColumn = JButton("Delete")
-        removeBtnColumn.addActionListener {
+        val removeBtnIndex = JButton("Delete")
+        removeBtnIndex.addActionListener {
             val selectedIndex = indexList.selectedIndex
             if (selectedIndex != -1) {
                 indexListModel.removeElementAt(selectedIndex)
+                if (indexListModel.isEmpty) {
+                    isOKActionEnabled = false
+                }
             }
         }
 
@@ -173,8 +182,8 @@ class InputDEntityAttribute(
 
         // Adding buttons to a panel
         val buttonPanel = JPanel()
-        buttonPanel.add(addBtnColumn)
-        buttonPanel.add(removeBtnColumn)
+        buttonPanel.add(addBtnIndex)
+        buttonPanel.add(removeBtnIndex)
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         add(buttonPanel, BorderLayout.SOUTH)
     }

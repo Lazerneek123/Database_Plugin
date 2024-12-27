@@ -186,7 +186,7 @@ class InputDChooseRelation(
                             inputDialog.getParentColumn(),
                             inputDialog.getEntityColumn()
                         )
-                        showNotification("The class ${genCreateRelationOneToOne.getNameClass()} is successfully created!")
+                        //showNotification("The class ${genCreateRelationOneToOne.getNameClass()} is successfully created!")
                     }
 
                     if (relation == "1:M") {

@@ -1,22 +1,24 @@
 package com.example.demo.generator
 
 import com.example.demo.element.CapitalizeFirstLetter
-import com.example.demo.model.Column
-import com.example.demo.model.ColumnAdvancedSettings
-import com.example.demo.model.EntityAdvancedSettings
-import com.example.demo.model.PrimaryKey
+import com.example.demo.model.*
 import com.example.demo.tableConfig.TableCreate
 import javax.swing.DefaultListModel
 
 class GenCreateTable(
     private val entityAttribute: EntityAdvancedSettings?,
     private val isEntity: Boolean,
-    private val isColumnInfo: Boolean
+    private val isColumnInfo: Boolean,
+    private val isForeignKey: Boolean,
+    private val isIndex: Boolean
 ) {
     private var code = ""
 
     fun generate(
-        config: TableCreate, listModelColumnsAttribute: DefaultListModel<ColumnAdvancedSettings?>
+        config: TableCreate,
+        listModelColumnsAttribute: DefaultListModel<ColumnAdvancedSettings?>,
+        listModelForeignKeysAttribute: DefaultListModel<ForeignKey?>,
+        listModelIndexesAttribute: DefaultListModel<Index?>
     ): String {
         code = """
                 package ${config.getPath()}
@@ -24,8 +26,10 @@ class GenCreateTable(
                 import androidx.room.Entity
                 import androidx.room.PrimaryKey
                 ${if (isColumnInfo) "import androidx.room.ColumnInfo" else ""}
+                ${if (isForeignKey) "import androidx.room.ForeignKey" else ""}
+                ${if (isIndex) "import androidx.room.Index" else ""}
 
-                ${generateEntity()}
+                ${generateEntity(listModelForeignKeysAttribute, listModelIndexesAttribute)}
                 data class ${CapitalizeFirstLetter().uppercaseChar(config.getTableName())}(
                 ${generateColumns(config.getListColumnData(), listModelColumnsAttribute)}
                 ) {
@@ -36,46 +40,48 @@ class GenCreateTable(
         return code
     }
 
-    private fun generateEntity(): String {
+    private fun generateEntity(
+        listModelForeignKeysAttribute: DefaultListModel<ForeignKey?>,
+        listModelIndexesAttribute: DefaultListModel<Index?>
+    ): String {
         var content = ""
 
         if (isEntity) {
-            content = """@Entity(${
+            content = """
+                @Entity(${
                 if (entityAttribute!!.tableName != null)
-                    "\n                        tableName = \"${entityAttribute.tableName}\","
+                    "\n                    tableName = \"${entityAttribute.tableName}\","
                 else ""
             }${
                 if (entityAttribute.primaryKeys != null)
-                    "\n                        primaryKeys = [${getPrimaryKeys()}" +
-                            "],"
+                    "\n                    primaryKeys = [${getPrimaryKeys()}" + 
+                            "\n                    ],"
                 else ""
             }
-            foreignKeys = [
-                ForeignKey(
-                    entity = User::class,
-                    parentColumns = ["id"],
-                    childColumns = ["authorId"],
-                    onDelete = ForeignKey.CASCADE,
-                    onUpdate = ForeignKey.CASCADE,
-                    deferred = false
-                )
-            ],
-            indices = [
-                Index(
-                    name = "index_author_and_title",
-                    value = ["authorId"],
-                    orders = [Index.Order.ASC],
-                    unique = true
-                ),
-                Index(value = ["title"])
-            ],
+            ${
+                if (isForeignKey)
+                    generateForeignKeys(listModelForeignKeysAttribute)
+                else ""
+            }
+            ${
+                if (isIndex)
+                    "\n                    indices = [\n" +
+                            "                        Index(\n" +
+                            "                            name = \"index_author_and_title\",\n" +
+                            "                            value = [\"authorId\"],\n" +
+                            "                            orders = [Index.Order.ASC],\n" +
+                            "                            unique = true\n" +
+                            "                        ),\n" +
+                            "                        Index(value = [\"title\"])\n" +
+                            "                    ],"
+                else ""
+            }
             ${
                 if (entityAttribute.inheritSuperIndices != null)
-                    "inheritSuperIndices = ${entityAttribute.inheritSuperIndices},"
+                    "        inheritSuperIndices = ${entityAttribute.inheritSuperIndices},"
                 else ""
             }
-            ignoredColumns = ["temporaryData"]
-        )"""
+                )"""
         } else {
             content = """@Entity"""
         }
@@ -92,7 +98,7 @@ class GenCreateTable(
 
         entityAttribute!!.primaryKeys!!.forEach { element ->
             val cont = """    
-                    "$element","""
+                        "$element","""
             content += cont
 
         }
@@ -119,6 +125,77 @@ class GenCreateTable(
                     var $name: $dataType = $value"""
             content += cont
         }
+        return content
+    }
+
+    private fun generateForeignKeys(list: DefaultListModel<ForeignKey?>): String {
+        var content = """        foreignKeys = ["""
+
+        list.elements().toList().forEachIndexed { i, element ->
+            val entity = element!!.entity
+            val parentColumns = element.parentColumns
+            val childColumns = element.childColumns
+            val onDelete = element.onDelete
+            val onUpdate = element.onUpdate
+            val deferred = element.deferred
+
+            val cont = """    
+                                         ForeignKey(
+                                                    ${
+                                                       if (entity != null) {
+                    "        entity = $entity::class,\n"
+                                                       } else {
+                    ""
+                                                       }
+                                                     }
+                                                     ${
+                if (parentColumns != null) {
+                    "        parentColumns = [" +
+                            "${parentColumns.forEach { e -> "${e}" }
+                            }],\n"
+                } else {
+                    ""
+                }
+            }
+            ${
+                if (childColumns != null) {
+                    "        childColumns = [" +
+                            "${childColumns.forEach { e -> "${e}" }
+                            }],\n"
+                } else {
+                    ""
+                }
+            }
+            ${
+                if (onDelete != null) {
+                    "        onDelete = ForeignKey.$onDelete,\n"
+                } else {
+                    ""
+                }
+            }
+            ${
+                if (onUpdate != null) {
+                    "        onUpdate = ForeignKey.$onUpdate,\n"
+                } else {
+                    ""
+                }
+            }
+            ${
+                if (entity != null && deferred != null) {
+                    "        deferred = $deferred\n"
+                } else {
+                    ""
+                }
+            }                    )"""
+            content += cont
+
+            if (i < list.size - 1) {
+                content += ","
+            }
+        }
+        content += "                    ],"
+
+
         return content
     }
 

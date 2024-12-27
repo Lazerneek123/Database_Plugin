@@ -7,7 +7,10 @@ import com.example.demo.model.EntityAdvancedSettings
 import com.example.demo.model.ForeignKey
 import com.example.demo.model.Index
 import com.example.demo.model.PrimaryKey
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
@@ -79,8 +82,8 @@ class InputDTable(private val directoryPath: String, private val event: AnAction
         // Додаємо панелі для кроків
         panelMain.add(createStepMainPanel(), "Step 1")
         panelMain.add(createStepEntityPanel(), "Step 2")
-        panelMain.add(createStepPrimaryKeysPanel(), "Step 3")
-        panelMain.add(createStepColumnsPanel(), "Step 4")
+        //panelMain.add(createStepPrimaryKeysPanel(), "Step 3")
+        panelMain.add(createStepColumnsPanel(), "Step 3")
     }
 
     private fun createStepColumnsPanel(): JPanel {
@@ -248,17 +251,42 @@ class InputDTable(private val directoryPath: String, private val event: AnAction
                         selectedElement = element.key
 
                         val inputDialog =
-                            InputDEntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath)
+                            InputDEntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath, event.project!!)
                         inputDialog.show()
 
                         // Get the results when you click the OK button
                         if (inputDialog.isOK) {
                             val pair = inputDialog.getSelectedValue()
+//                            event.project?.showNotification(
+//                                listModelEntityAttribute.elements().toList()[2]!!.value.toString()
+//                            )
                             listModelEntityAttribute.elements().toList().forEachIndexed { index, element ->
                                 // Update element if key matches
                                 if (element!!.key == pair.key) {
                                     val updatedElement = mapOf(element.key to pair.value).entries.first()
                                     listModelEntityAttribute.set(index, updatedElement)
+                                }
+                                if (index == 2) {
+                                    val foreignKeys = listModelEntityAttribute.elements().toList()[index]!!.value
+                                    isForeignKey = foreignKeys.toString() != "null"
+                                    (foreignKeys as List<ForeignKey?>?)!!.forEach { e ->
+                                        listModelForeignKeysAttribute.addElement(e)
+//                                        event.project?.showNotification(
+//                                            "список: " + e.toString()
+//                                        )
+                                    }
+
+
+                                }
+                                if (index == 3) {
+                                    val indexes = listModelEntityAttribute.elements().toList()[index]!!.value
+                                    isIndex = indexes.toString() != "null"
+                                    (indexes as List<Index?>?)!!.forEach { e ->
+                                        listModelIndexesAttribute.addElement(e)
+//                                        event.project?.showNotification(
+//                                            "список: " + e.toString()
+//                                        )
+                                    }
                                 }
 
                                 // Checking for differences in values
@@ -501,6 +529,12 @@ class InputDTable(private val directoryPath: String, private val event: AnAction
         })
     }
 
+    private fun Project.showNotification(message: String) {
+        val groupId = "Database Plugin Notification Group"
+        NotificationGroupManager.getInstance().getNotificationGroup(groupId)
+            .createNotification("Table Create", message, NotificationType.INFORMATION).notify(this)
+    }
+
     private fun checkConditions() {
         val nameTable = nameTableField.text
 
@@ -569,5 +603,27 @@ class InputDTable(private val directoryPath: String, private val event: AnAction
             createAction,
             cancelAction
         )
+    }
+
+    private var isForeignKey = false
+    fun isForeignKey(): Boolean {
+        return isForeignKey
+    }
+
+    private var isIndex = false
+    fun isIndex(): Boolean {
+        return isIndex
+    }
+
+    private val listModelForeignKeysAttribute = DefaultListModel<ForeignKey?>()
+    //private val listForeignKeysAttribute = JList(listModelForeignKeysAttribute)
+    fun getListModelForeignKeysAttribute(): DefaultListModel<ForeignKey?> {
+        return listModelForeignKeysAttribute
+    }
+
+    private val listModelIndexesAttribute = DefaultListModel<Index?>()
+    //private val listIndexesAttribute = JList(listModelColumnsAttribute)
+    fun getListModelIndexesAttribute(): DefaultListModel<Index?> {
+        return listModelIndexesAttribute
     }
 }

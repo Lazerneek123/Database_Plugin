@@ -252,7 +252,7 @@ class InputDDataBase(private val directoryPath: String, private val event: AnAct
                         selectedElement = element.key
 
                         val inputDialog =
-                            InputDEntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath)
+                            InputDEntityAttribute(selectedElement, listModelPrimaryKey, listModelColumn, directoryPath, event.project!!)
                         inputDialog.show()
 
                         // Get the results when you click the OK button

@@ -169,7 +169,7 @@ class InputDQuery(
         queryPanel.add(scrollPane)
 
         val chooseFilePane = JPanel(/*FlowLayout(FlowLayout.LEFT)*//*GridBagLayout()*/)
-        chooseFilePane.layout = BoxLayout(chooseFilePane, BoxLayout.Y_AXIS)
+        chooseFilePane.layout = BoxLayout(chooseFilePane, BoxLayout.X_AXIS)
         val icon = AllIcons.General.OpenDisk
 
         // Change the size of the icon
